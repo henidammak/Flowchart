@@ -1,0 +1,13 @@
+/* :host {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+   */
+
+   
+   .content {
+    margin-right: 250px; /* Décale le contenu pour ne pas qu'il soit caché */
+    padding: 20px;
+  }
+  

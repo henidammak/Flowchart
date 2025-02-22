@@ -1,0 +1,120 @@
+/* toolbar.component.css */
+.toolbar {
+    position: fixed; /* Fixe la navbar en haut */
+    display: flex;
+    height: 60px;
+    background-color: white;
+    align-items: center;
+    z-index: 4;
+    top: 54px;
+    left: 0;
+    width: 100%;
+    /* box-shadow: -2px 0 7px rgba(0, 0, 0, 0.2); */
+    box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.5);
+}
+
+
+.spacer {
+    flex: 1;
+}
+
+.buttons {
+    display: flex;
+    gap: 16px; /* Espace entre les boutons */
+}
+
+
+  .button-start{
+    color: white !important;
+    background-color: #064E3B;
+    border-radius: 20px; /* Arrondi les coins */
+    transition: background-color 0.3s ease; /* Animation fluide */
+
+
+    
+  }
+  
+  .button-start:hover {
+    background-color: #043A2B; /* Couleur plus sombre au survol */
+  }
+
+  .button-save {
+    color: white !important;
+    background-color: #EC2638;
+    border-radius: 20px; /* Arrondi les coins */
+ 
+    transition: background-color 0.3s ease; /* Animation fluide */
+
+    right: 4px;
+  }
+  
+  .button-save:hover {
+    background-color: #7F1D1D; /* Couleur plus sombre au survol */
+  }
+  
+
+  .icon-container {
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+  }
+  
+  .toolbar-icon-file {
+    margin-top:8px;
+    width: 30px;
+    height: 30px;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Garder la transition pour la couleur et le transform */
+  }
+  
+  .icon-container:hover .toolbar-icon-file {
+    background-color: rgba(0, 0, 0, 0.1); /* Rectangle background on hover */
+    transform: scale(1.2); /* Agrandir l'icône sans changer son espace */
+    border-radius: 4px;
+  }
+
+  .toolbar-icon-share {
+    margin-top:8px;
+    width: 30px;
+    height: 30px;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Garder la transition pour la couleur et le transform */
+  }
+  
+  .icon-container:hover .toolbar-icon-share {
+    background-color: rgba(0, 0, 0, 0.1); /* Rectangle background on hover */
+    transform: scale(1.2); /* Agrandir l'icône sans changer son espace */
+    border-radius: 4px;
+  }
+  
+  .icon-menu {
+    position: absolute;
+    top: 50px; /* Ajustez cette valeur si nécessaire */
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    width: 90px; /* Couvre toute la largeur de l'élément parent */
+    
+  }
+  
+  .icon-menu button {
+    padding: 10px;
+    text-align: left;
+    color: gray; /* Texte gris */
+    background-color: transparent; /* Assurer que le fond reste transparent */
+    border: none; /* Pour éviter les bordures par défaut du bouton */
+    cursor: pointer;
+  }
+  
+  .icon-menu button:hover {
+    background-color: rgba(0, 0, 0, 0.05); /* Légère couleur de fond au survol des boutons */
+    width: 100%;
+  }
+  
+  .icon-container.active .icon-menu {
+    display: block;
+    
+  }
+  

@@ -1,0 +1,46 @@
+<!-- <div class="toolbar">
+  <div class="icon-container">
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <img src="../../../assets/css/file.png" alt="Icon" class="toolbar-icon"/>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item>Load File</button>
+      <button mat-menu-item>New File</button>
+    </mat-menu>
+  </div>
+  <div class="spacer"></div>
+  <div class="buttons">
+    <button mat-button class="button-start">Start</button>
+    <button mat-button class="button-save">Save</button>
+  </div>
+</div> -->
+
+
+
+<div class="toolbar">
+  <div class="icon-container" (click)="togglefile()" [class.active]="fileOpen">
+    <img src="../../../assets/css/file.png" alt="Icon" class="toolbar-icon-file"/>
+    <div *ngIf="fileOpen" class="icon-menu">
+      <button mat-button>New File</button>
+      <button mat-button>Load File</button>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="buttons">
+    <button mat-button class="button-start">Start</button>
+    <button mat-button class="button-save">Task +</button>
+
+  </div>
+
+  <div class="icon-container" (click)="toggleShare()" [class.active]="shareOpen">
+    <img src="../../../assets/css/share.png" alt="Icon" class="toolbar-icon-share"/>
+    <div *ngIf="shareOpen" class="icon-menu" style="position: absolute;left: -90px; width: 135px;" >
+      <button mat-button>Print diagram</button>
+      <button mat-button>Export diagram</button>
+      <button mat-button>Save diagram</button>
+    </div>
+  </div>
+</div>
+
+  

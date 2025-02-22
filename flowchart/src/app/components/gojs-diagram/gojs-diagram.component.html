@@ -1,0 +1,72 @@
+<div id="sample">
+  <div class="sampleWrapper">
+    <div style="width: 100%; height: fit-content; display: flex; flex: 2">
+      <div id="myPaletteDiv" style="width: 200px; margin-right: 5px;"></div>
+      <div id="myDiagramDiv" style="flex-grow: 1; height: 810px"></div>
+    </div>
+    
+    <div style="flex: 1; min-width: 425px">
+      Theme:
+      <select id="theme" onchange="changeTheme()">
+        <option value="system">System</option>
+        <option value="light" selected="">Light</option>
+        <option value="dark" >Dark</option>
+      </select>
+      <!-- <p>
+        The Flowchart sample demonstrates several key features of GoJS, namely
+        <a href="../intro/palette.html">Palette</a>s, <a href="../intro/links.html">Linkable nodes</a>, Drag/Drop behavior,
+        <a href="../intro/textBlocks.html">Text Editing</a>, and the use of <a href="../intro/templateMaps.html">Node Template Maps</a> in Diagrams.
+      </p>
+      <p>
+        Drag from the edges of a Node to create new Links. Selecting Links allows you to re-shape and re-link them. Selecting a Node and then clicking its
+        TextBlock will allow you to edit text (except on the Start and End Nodes). Context clicking a Link creates an editable link label.
+      </p>
+      <p>The dark and light themes are controlled using the <a>ThemeManager</a>.</p> -->
+      <button onclick="printDiagram()">Print Diagram Using SVG</button>
+      <br>
+      <button id="SaveButton" onclick="save()">Save</button>
+      <button onclick="load()">Load</button>
+      Diagram Model saved in JSON format:
+      <textarea id="mySavedModel" style="width: 100%; height: 375px">
+        { "class": "GraphLinksModel",
+        "pointsDigits": 0,
+        "nodeDataArray": [
+          {"key":-1,"category":"Start","loc":"-300 50","text":"Start"},
+          {"key":-2,"category":"End","loc":"350 750","text":"End"},
+          {"category":"Conditional","text":"Is data\ntree-like?","key":-14,"loc":"50 150"},
+          {"text":"Use a TreeModel","key":-5,"loc":"-150 250"},
+          {"text":"Use a GraphLinksModel","key":-6,"loc":"250 250"},
+          {"category":"Comment","text":"GraphLinksModel\nalso allows Groups","key":-7,"loc":"450 250"},
+          {"text":"Create DIV for Diagram","key":-8,"loc":"-150 50"},
+          {"text":"Create new Diagram associated with DIV","key":-9,"loc":"150 50"},
+          {"text":"Style node templates","key":-10,"loc":"50 650"},
+          {"text":"Add data to node/linkDataArray","key":-12,"loc":"250 350"},
+          {"text":"Add data to nodeDataArray, including parent","key":-13,"loc":"-150 350"},
+          {"text":"Style link templates","key":-15,"loc":"350 650"},
+          {"category":"Conditional","text":"Should nodes be auto-positioned?","key":-16,"loc":"50 450"},
+          {"text":"Choose a layout","key":-18,"loc":"-150 550"},
+          {"text":"Set location in node data and bind","key":-17,"loc":"250 550"}
+        ],
+        "linkDataArray": [
+          {"from":-1,"to":-8},
+          {"from":-8,"to":-9},
+          {"from":-5,"to":-13},
+          {"from":-6,"to":-12},
+          {"from":-15,"to":-2},
+          {"from":-14,"to":-5,"text":"Yes"},
+          {"from":-14,"to":-6,"text":"No"},
+          {"from":-9,"to":-14},
+          {"from":-13,"to":-16},
+          {"from":-12,"to":-16},
+          {"from":-16,"to":-18,"text":"Yes"},
+          {"from":-16,"to":-17,"text":"No"},
+          {"from":-18,"to":-10},
+          {"from":-17,"to":-10},
+          {"from":-10,"to":-15}
+        ]}
+      
+      </textarea>
+      <!-- <p id="hidden" style="padding: 0; height: 0px">this forces the font to load in Chromium browsers</p> -->
+    </div>
+  </div>
+</div>
