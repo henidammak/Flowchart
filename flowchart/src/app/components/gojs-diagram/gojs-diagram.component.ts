@@ -1,82 +1,74 @@
-import { Component, OnInit,AfterViewInit } from '@angular/core';
+import { HtmlParser } from '@angular/compiler';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import * as go from 'gojs';
 
 @Component({
   selector: 'app-gojs-diagram',
   templateUrl: './gojs-diagram.component.html',
-  styleUrls: ['./gojs-diagram.component.css']
+  styleUrls: ['./gojs-diagram.component.css'],
 })
 export class GojsDiagramComponent implements AfterViewInit {
-  
   private myDiagram: go.Diagram | null = null;
   private myPalette: go.Palette | null = null;
-  constructor() { }
+  constructor() {}
 
-  // ngAfterViewInit(): void {
-  //   setTimeout(() => {
-  //     this.initDiagram();
-  //   }, 300);
-  // }
   ngAfterViewInit(): void {
     const diagramDiv = document.getElementById('myDiagramDiv');
-    if (diagramDiv) { 
+    if (diagramDiv) {
       this.initDiagram();
     } else {
       console.error("Erreur: 'myDiagramDiv' n'existe pas.");
     }
   }
-  
 
   initDiagram(): void {
-    
+    //création de l'objet mydiagram
     const $ = go.GraphObject.make;
     this.myDiagram = $(go.Diagram, 'myDiagramDiv', {
       'undoManager.isEnabled': true,
-      'themeManager.changesDivBackground': true, //yekhou couleur el background ml div mtaa thememanager
+      'themeManager.changesDivBackground': true, //prend le couleur de l'attribut div du table themeManager
       // 'themeManager.currentTheme': 'light' // initial theme
-
-      // 'grid.visible': true,  // Affiche la grille
-      // 'grid.gridCellSize': new go.Size(10, 10),  // Taille des cellules de la grille
-      // 'grid.gridLineColor': 'gray',  // Couleur des lignes de la grille
-      // 'grid.gridLineDash': [4, 4] 
-
     });
-    // console.log(document.getElementById('myDiagramDiv'));
-    // if (!this.myDiagram) {
-    //   console.error("Erreur: Impossible d'initialiser le diagramme.");
-    //   return;
-    // }
 
-    // console.log(document.getElementById('myDiagramDiv'));
-
-// la grille arriere plan du diagram
+    // la grille arriere plan du diagramme
     this.myDiagram.grid = $(
-      go.Panel, "Grid",
-      { gridCellSize: new go.Size(40, 40) },  // Taille des cellules
-      $(go.Shape, "LineH", { stroke: "lightgray", strokeWidth: 0.5 }), // Lignes horizontales fines
-      $(go.Shape, "LineV", { stroke: "lightgray", strokeWidth: 0.5 }), // Lignes verticales fines
-    
+      go.Panel,
+      'Grid',
+      { gridCellSize: new go.Size(40, 40) }, // Taille des cellules
+      $(go.Shape, 'LineH', { stroke: 'lightgray', strokeWidth: 0.5 }), // Lignes horizontales fines
+      $(go.Shape, 'LineV', { stroke: 'lightgray', strokeWidth: 0.5 }), // Lignes verticales fines
+
       // Lignes plus épaisses toutes les 5 cellules
-      $(go.Shape, "LineH", { stroke: "#E0E0E0", strokeWidth: 0.3  }, new go.Binding("interval", "", () => 5)),
-      $(go.Shape, "LineV", { stroke: "#E0E0E0", strokeWidth: 0.3  }, new go.Binding("interval", "", () => 5))
+      $(
+        go.Shape,
+        'LineH',
+        { stroke: '#E0E0E0', strokeWidth: 0.3 },
+        new go.Binding('interval', '', () => 5)
+      ),
+      $(
+        go.Shape,
+        'LineV',
+        { stroke: '#E0E0E0', strokeWidth: 0.3 },
+        new go.Binding('interval', '', () => 5)
+      )
     );
-    ////////////////
-    this.myPalette = go.GraphObject.make(go.Palette,  {
+
+    ////création de l'objet myPalette
+    this.myPalette = go.GraphObject.make(go.Palette, {
       'undoManager.isEnabled': true,
       'themeManager.changesDivBackground': true,
-
       contentAlignment: go.Spot.Top, // Aligner le contenu en haut
     });
-    
+
     ///////////////
 
     this.myDiagram.addDiagramListener('Modified', (e) => {
-      const button = document.getElementById('SaveButton')as HTMLButtonElement;
+      const button = document.getElementById('SaveButton') as HTMLButtonElement;
       console.log(button);
       if (button) button.disabled = !this.myDiagram?.isModified;
       const idx = document.title.indexOf('*');
       console.log(idx);
-      const idt = document.title
+      const idt = document.title;
       console.log(idt);
 
       if (this.myDiagram?.isModified) {
@@ -87,10 +79,11 @@ export class GojsDiagramComponent implements AfterViewInit {
       }
     });
 
-    // set up some colors/fonts for the default ('light') and dark Themes
+    // tableau du themeManager pour mydiagram
 
     this.myDiagram.themeManager.set('light', {
       colors: {
+        texte:"white",
         text: 'black',
         start: '#064e3b',
         step: '#E9E9E9',
@@ -102,14 +95,14 @@ export class GojsDiagramComponent implements AfterViewInit {
         linkOver: '#cbd5e1',
         div: '#FFFFFF',
         // div: '#ede9e0'
-      }
+      },
     });
 
+    // tableau du themeManager pour myPalette
     this.myPalette.themeManager.set('light', {
       colors: {
         text: 'black',
         start: '#064e3b',
-        // step: '#49939e',
         step: '#E9E9E9',
         conditional: '#6a9a8a',
         end: '#7f1d1d',
@@ -118,10 +111,18 @@ export class GojsDiagramComponent implements AfterViewInit {
         link: '#dcb263',
         linkOver: '#cbd5e1',
         div: '#FAFAFB',
-
       },
     });
 
+    const STROKE_WIDTH = 0; // Épaisseur des bordures des cercles des nœuds.
+    const ICON_TOP_MARGIN = 20; // Marge supérieure pour positionner l'image dans le nœud.
+    const ICON_DIAMETER = 30; // Taille du cercle où l'image sera placée.
+    const ICON_RIGHT_MARGIN = 60;
+    const ICON_TOP_SHIFT = -10; // Déplacement vers le haut (valeur négative).
+
+
+
+    // je peut l'utiliser si je veut ajouter un theme dark a mon app
     // this.myDiagram.themeManager.set('dark', {
     //   colors: {
     //     text: '#fff',
@@ -135,17 +136,16 @@ export class GojsDiagramComponent implements AfterViewInit {
     //   }
     // });
 
+
+    // appel de la methode qui definis les nodes personalisées 
     this.defineFigures();
-////////////////////////////////
-    // Continuez avec le reste de la logique GoJS ici, comme défini dans votre code JavaScript
-    // Par exemple, ajouter les écouteurs d'événements, les modèles de noeud, etc.
-    // helper definitions for node templates
+    
+    // fonction pour la position des node dans le diagramme
     function nodeStyle(node: go.Part) {
       node
         .set({ locationSpot: go.Spot.Center })
-        .bindTwoWay('location', 'loc', go.Point.parse, go.Point.stringify);
+        .bindTwoWay('location', 'loc', go.Point.parse, go.Point.stringify); // go.Point.parse est utilisé pour convertir une chaîne de texte en un objet go.Point lorsqu'on charge les données. //go.Point.stringify est utilisé pour convertir un go.Point en une chaîne lorsqu'on sauvegarde les données.
     }
-
 
     // Définit le style des formes (sans contour, cliquable).
     function shapeStyle(shape: go.Shape) {
@@ -158,69 +158,110 @@ export class GojsDiagramComponent implements AfterViewInit {
 
     //Définit la police et la couleur du texte selon le thème.
     function textStyle(textblock: any): void {
-      textblock.set({ font: ' 11pt Figtree, sans-serif' }).theme('stroke', 'text');
+      textblock
+        .set({ font: ' 11pt Figtree, sans-serif' })
+        .theme('stroke', 'text');
     }
-    
-// definition mtaa les nodes mtaa diagram
+
+    // configuration de la cercle de l'icon wifi
+    function strokeStyle(shape: go.Shape): go.Shape {
+      return shape.set({
+        // fill: theme.colors.nodeBackground,
+        strokeWidth: STROKE_WIDTH,
+      })
+      .theme('fill', 'step');
+    }
+
+
+        // l'icon de ma node wifi
+    const NodeImage = (): go.Panel =>
+      new go.Panel('Spot', {
+        alignmentFocus: go.Spot.Top,
+        alignment: new go.Spot(
+          0,
+          0,
+          STROKE_WIDTH / 2 + ICON_RIGHT_MARGIN,
+          ICON_TOP_MARGIN + ICON_TOP_SHIFT
+        ),
+      }).add(
+        new go.Shape({
+          figure: 'Circle',
+
+          desiredSize: new go.Size(ICON_DIAMETER, ICON_DIAMETER),
+        }).apply(strokeStyle),
+        new go.Picture({
+          source: 'assets/css/wifi.png',
+          scale: 0.05,
+        })
+      );
+
+    // definition des nodes du diagram
     // define the Node templates for regular nodes signifie que ce modèle est utilisé si un nœud n'a pas de type (category) défini.
     this.myDiagram.nodeTemplateMap.add(
-      '', // the default category , '' : 
-      new go.Node('Auto').apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
+      '', // the default category , '' :
+      new go.Node('Auto')
+        .apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
         .add(
           new go.Shape('RoundedRectangle', {
-            // l whidth wel height hedhom kif ena7ihom yarjaa el shape standard w yadapti el taille mteou 7as el tex eli fi westou
+            // si on annule el width et height , la node adapte ca taille selon le taille du texte
             width: 150,
-            height: 80, 
+            height: 100,
             fromLinkable: true,
             toLinkable: true,
             fromSpot: go.Spot.AllSides,
             toSpot: go.Spot.AllSides,
-            
-            
+
             // fromLinkable: true → Peut envoyer des connexions (Link).
             // toLinkable: true → Peut recevoir des connexions.
             // fromSpot: go.Spot.AllSides → Peut envoyer des liens depuis n'importe quel côté.
             //toSpot: go.Spot.AllSides → Peut recevoir des liens de n'importe quel côté.
           })
             .apply(shapeStyle)
-            .theme('fill', 'step'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9 
-          new go.TextBlock({
+            .theme('fill', 'step'), //utilise le couleur du attribut "step" selon theme choisi ,(déclaration des themes au dessus)
+          new go.TextBlock({ //configuration du texte ecrivé  dans la node de category ''
             margin: 12,
             maxSize: new go.Size(150, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
-            wrap: go.Wrap.Fit,// Active le retour à la ligne si le texte dépasse la largeur maximale.
-            editable: true // Le texte peut être modifié par l'utilisateur.
+            wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
+            editable: true, // Le texte peut être modifié par l'utilisateur.
+            alignment: new go.Spot(0.5, 0.8),
           })
             .apply(textStyle)
-            .bindTwoWay('text')
+            .bindTwoWay('text'),
+            NodeImage(), // l'icon de la node
         )
+        
     );
- 
-    //el composant hedha personalisié , snaaneh fel defineFigures w ajoutineh lel gojs , bech staamlneh houni waayatnelou bel .shape
+
+    // ce composant et un composant personalisée construis par la fonction defineFigure et appelé ici pour etre affiché dans le diagramme
     this.myDiagram.nodeTemplateMap.add(
       'Conditional',
-      new go.Node('Auto').apply(nodeStyle)
-        .add(
-          new go.Shape('Conditional', { fromLinkable: true, toLinkable: true }).apply(shapeStyle).theme('fill', 'conditional'),
-          new go.TextBlock({
-            margin: 8,
-            maxSize: new go.Size(160, NaN),
-            wrap: go.Wrap.Fit,
-            textAlign: 'center',
-            editable: true
-          })
-            .apply(textStyle)
-            .bindTwoWay('text')
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Conditional', { fromLinkable: true, toLinkable: true })
+          .apply(shapeStyle)
+          .theme('fill', 'conditional'),
+        new go.TextBlock({
+          margin: 8,
+          maxSize: new go.Size(160, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+          stroke: "white" 
+        })
+          // .apply(textStyle)
+          .bindTwoWay('text')
+      )
     );
 
     this.myDiagram.nodeTemplateMap.add(
       'Start',
-      new go.Node('Auto')
-        .apply(nodeStyle)
-        .add(
-          new go.Shape('Capsule', { fromLinkable: true }).apply(shapeStyle).theme('fill', 'start'),
-          new go.TextBlock('Start', { margin: new go.Margin(5, 6) }).apply(textStyle).bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Capsule', { fromLinkable: true })
+          .apply(shapeStyle)
+          .theme('fill', 'start'),
+        new go.TextBlock('Start', { margin: new go.Margin(5, 6),stroke: "white" })
+          // .apply(textStyle)
+          .bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
+      )
     );
 
     this.myDiagram.nodeTemplateMap.add(
@@ -228,56 +269,62 @@ export class GojsDiagramComponent implements AfterViewInit {
       new go.Node('Auto')
         .apply(nodeStyle)
         .add(
-          new go.Shape('Capsule', { toLinkable: true }).apply(shapeStyle).theme('fill', 'end'),
-          new go.TextBlock('End', { margin: new go.Margin(5, 6) }).apply(textStyle).bind('text')
+          new go.Shape('Capsule', { toLinkable: true })
+            .apply(shapeStyle)
+            .theme('fill', 'end'),
+          new go.TextBlock('End', { margin: new go.Margin(5, 6) ,stroke: "white"} )
+            // .apply(textStyle)
+            .bind('text')
         )
     );
 
     this.myDiagram.nodeTemplateMap.add(
       'Comment',
-      new go.Node('Auto').apply(nodeStyle)
-        .add(
-          new go.Shape('File', { strokeWidth: 3 }).theme('fill', 'div').theme('stroke', 'comment'),
-          new go.TextBlock({
-            font: '9pt Figtree, sans-serif',
-            margin: 8,
-            maxSize: new go.Size(200, NaN),
-            wrap: go.Wrap.Fit,
-            textAlign: 'center',
-            editable: true
-          })
-            .theme('stroke', 'bgText')
-            .bindTwoWay('text')
-          // no ports, because no links are allowed to connect with a comment
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('File', { strokeWidth: 3 })
+          .theme('fill', 'div')
+          .theme('stroke', 'comment'),
+        new go.TextBlock({
+          font: '9pt Figtree, sans-serif',
+          margin: 8,
+          maxSize: new go.Size(200, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+        })
+          .theme('stroke', 'bgText')
+          .bindTwoWay('text')
+        // no ports, because no links are allowed to connect with a comment
+      )
     );
 
-// definition mtaa les nodes mtaa plette
+    
+    // definition mtaa les nodes mtaa palette
     this.myPalette.nodeTemplateMap.add(
-      '', // the default category , '' : 
-      new go.Node('Auto').apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
+      '', // the default category , '' :
+      new go.Node('Auto')
+        .apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
         .add(
           new go.Shape('RoundedRectangle', {
             width: 180,
-            height: 40, 
+            height: 40,
             fromLinkable: true,
             toLinkable: true,
             fromSpot: go.Spot.AllSides,
             toSpot: go.Spot.AllSides,
-            
-            
+
             // fromLinkable: true → Peut envoyer des connexions (Link).
             // toLinkable: true → Peut recevoir des connexions.
             // fromSpot: go.Spot.AllSides → Peut envoyer des liens depuis n'importe quel côté.
             //toSpot: go.Spot.AllSides → Peut recevoir des liens de n'importe quel côté.
           })
             .apply(shapeStyle)
-            .theme('fill', 'step'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9 
+            .theme('fill', 'step'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9
           new go.TextBlock({
             margin: 12,
             maxSize: new go.Size(180, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
-            wrap: go.Wrap.Fit,// Active le retour à la ligne si le texte dépasse la largeur maximale.
-            editable: true // Le texte peut être modifié par l'utilisateur.
+            wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
+            editable: true, // Le texte peut être modifié par l'utilisateur.
           })
             .apply(textStyle)
             .bindTwoWay('text')
@@ -286,29 +333,33 @@ export class GojsDiagramComponent implements AfterViewInit {
 
     this.myPalette.nodeTemplateMap.add(
       'Conditional',
-      new go.Node('Auto').apply(nodeStyle)
-        .add(
-          new go.Shape('Conditional', { fromLinkable: true, toLinkable: true }).apply(shapeStyle).theme('fill', 'conditional'),
-          new go.TextBlock({
-            margin: 8,
-            maxSize: new go.Size(160, NaN),
-            wrap: go.Wrap.Fit,
-            textAlign: 'center',
-            editable: true
-          })
-            .apply(textStyle)
-            .bindTwoWay('text')
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Conditional', { fromLinkable: true, toLinkable: true })
+          .apply(shapeStyle)
+          .theme('fill', 'conditional'),
+        new go.TextBlock({
+          margin: 8,
+          maxSize: new go.Size(160, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+          stroke: "white" 
+        })
+          // .apply(textStyle)
+          .bindTwoWay('text')
+      )
     );
 
     this.myPalette.nodeTemplateMap.add(
       'Start',
-      new go.Node('Auto')
-        .apply(nodeStyle)
-        .add(
-          new go.Shape('Capsule', { fromLinkable: true }).apply(shapeStyle).theme('fill', 'start'),
-          new go.TextBlock('Start', { margin: new go.Margin(5, 6) }).apply(textStyle).bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Capsule', { fromLinkable: true })
+          .apply(shapeStyle)
+          .theme('fill', 'start'),
+        new go.TextBlock('Start', { margin: new go.Margin(5, 6),stroke: "white" })
+          // .apply(textStyle)
+          .bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
+      )
     );
 
     this.myPalette.nodeTemplateMap.add(
@@ -316,76 +367,93 @@ export class GojsDiagramComponent implements AfterViewInit {
       new go.Node('Auto')
         .apply(nodeStyle)
         .add(
-          new go.Shape('Capsule', { toLinkable: true }).apply(shapeStyle).theme('fill', 'end'),
-          new go.TextBlock('End', { margin: new go.Margin(5, 6) }).apply(textStyle).bind('text')
+          new go.Shape('Capsule', { toLinkable: true })
+            .apply(shapeStyle)
+            .theme('fill', 'end'),
+          new go.TextBlock('End', { margin: new go.Margin(5, 6),stroke: "white" })
+            // .apply(textStyle)
+            .bind('text')
         )
     );
 
     this.myPalette.nodeTemplateMap.add(
       'Comment',
-      new go.Node('Auto').apply(nodeStyle)
-        .add(
-          new go.Shape('File', { strokeWidth: 3 }).theme('fill', 'div').theme('stroke', 'comment'),
-          new go.TextBlock({
-            font: '9pt Figtree, sans-serif',
-            margin: 8,
-            maxSize: new go.Size(200, NaN),
-            wrap: go.Wrap.Fit,
-            textAlign: 'center',
-            editable: true
-          })
-            .theme('stroke', 'bgText')
-            .bindTwoWay('text')
-          // no ports, because no links are allowed to connect with a comment
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('File', { strokeWidth: 3 })
+          .theme('fill', 'div')
+          .theme('stroke', 'comment'),
+        new go.TextBlock({
+          font: '9pt Figtree, sans-serif',
+          margin: 8,
+          maxSize: new go.Size(200, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+        })
+          .theme('stroke', 'bgText')
+          .bindTwoWay('text')
+        // no ports, because no links are allowed to connect with a comment
+      )
     );
-    
-    // Définir un gabarit pour l’espaceur (élément invisible)
-    this.myPalette.nodeTemplateMap.add('Spacer',
-      $(go.Node, { selectable: false, movable: false },
-      $(go.TextBlock, '', { margin: new go.Margin(40, 0, 0, 0) }) // Décale vers le bas
-     )
-     );
 
-    //////////////
-    this.myPalette.nodeTemplateMap.add('Title',
-      $(go.Node, 'Auto',
+    // Définir un gabarit pour l’espaceur (élément invisible)
+    this.myPalette.nodeTemplateMap.add(
+      'Spacer',
+      $(
+        go.Node,
+        { selectable: false, movable: false },
+        $(go.TextBlock, '', { margin: new go.Margin(40, 0, 0, 0) }) // Décale vers le bas
+      )
+    );
+
+    // le composant titre (checkpoint,task,..) du palette
+    this.myPalette.nodeTemplateMap.add(
+      'Title',
+      $(
+        go.Node,
+        'Auto',
         { selectable: false, locationSpot: go.Spot.Center }, // Désactive la sélection du titre
-        $(go.Shape, 'RoundedRectangle',
+        $(
+          go.Shape,
+          'RoundedRectangle',
           { fill: '#E4ECF7', strokeWidth: 0, height: 30, width: 180 } // Fond bleu clair
         ),
-        $(go.TextBlock,
+        $(
+          go.TextBlock,
           { margin: 5, font: 'bold 12px sans-serif', stroke: 'gray' },
           new go.Binding('text', 'text')
         )
       )
     );
-    
-    /////////////////
 
-    
+
 
     // replace the default Link template in the linkTemplateMap
     this.myDiagram.linkTemplate = new go.Link({
-      routing: go.Routing.AvoidsNodes, // hedhy maaneha les links maytaadewch fou9 les noueds
-      curve: go.Curve.JumpOver, //el pont eli teta3mel , ki yetaada link fou9 link
-      corner: 5, //fel doura mtaa el link , nzidou arrondi
-      toShortLength: 4, //el link mayouslech lel noeud , ye9ef houwa wel fleche 9ad9ad (esthetiquement khir)
+      routing: go.Routing.AvoidsNodes, // les liens ne se passe pas sur les nodes
+      curve: go.Curve.JumpOver, // faire une pont si un lient passe sur un autre lien
+      corner: 5, //une arrondi dans le lien si il tourne
+      toShortLength: 4, //le lien ce termine avec la depart du fleche , (raison esthétique)
       relinkableFrom: true,
       relinkableTo: true,
       reshapable: true,
       resegmentable: true,
-      // hehdom bech ki nhouvri 3al link el couleur yetbedel 
+
+      // la configuration du lorsque je houvre sur un lien
       mouseEnter: (e: go.InputEvent, thisObj: go.GraphObject) => {
         const link = thisObj instanceof go.Link ? thisObj : null;
         if (link) {
           const highlight = link.findObject('HIGHLIGHT');
           if (highlight instanceof go.Shape) {
-            highlight.stroke = link.diagram?.themeManager?.findValue('linkOver', 'colors') as string || 'black';
+            highlight.stroke =
+              (link.diagram?.themeManager?.findValue(
+                'linkOver',
+                'colors'
+              ) as string) || 'black';
           }
         }
       },
-      
+
       mouseLeave: (e: go.InputEvent, thisObj: go.GraphObject) => {
         const link = thisObj instanceof go.Link ? thisObj : null;
         if (link) {
@@ -395,7 +463,7 @@ export class GojsDiagramComponent implements AfterViewInit {
           }
         }
       },
-      
+
       contextClick: (e: go.InputEvent, thisObj: go.GraphObject) => {
         const link = thisObj instanceof go.Link ? thisObj : null;
         if (link && e.diagram && link.data) {
@@ -403,8 +471,7 @@ export class GojsDiagramComponent implements AfterViewInit {
             m.set(link.data, 'text', 'Label');
           });
         }
-      }
-      
+      },
     })
       .bindTwoWay('points')
       .add(
@@ -413,72 +480,56 @@ export class GojsDiagramComponent implements AfterViewInit {
           isPanelMain: true,
           strokeWidth: 8,
           stroke: 'transparent',
-          name: 'HIGHLIGHT'
+          name: 'HIGHLIGHT',
         }),
         // the link path shape
-        new go.Shape({ isPanelMain: true, strokeWidth: 2 })
-          .theme('stroke', 'link'),
+        new go.Shape({ isPanelMain: true, strokeWidth: 2 }).theme(
+          'stroke',
+          'link'
+        ),
         // the arrowhead
-        new go.Shape({ toArrow: 'standard', strokeWidth: 0, scale: 1.5 })
-          .theme('fill', 'link'),
+        new go.Shape({ toArrow: 'standard', strokeWidth: 0, scale: 1.5 }).theme(
+          'fill',
+          'link'
+        ),
         // the link label
-        new go.Panel('Auto', { visible: false }) //par defaut maydhhorch el label eli wra el link , 
+        new go.Panel('Auto', { visible: false }) //par defaut maydhhorch el label eli wra el link ,
           .bind('visible', 'text', (t) => typeof t === 'string' && t.length > 0) //ken fama text ywali ydhhor el label , fou9 el link
           .add(
             // nzidou forme cercle degradé wra el label , bech twali lisible akther
-            new go.Shape('Ellipse', { strokeWidth: 0 })
-            .theme('fill', 'div', undefined, undefined, c => new go.Brush("Radial", { 0: c, 0.5: `${c}00` })),
+            new go.Shape('Ellipse', { strokeWidth: 0 }).theme(
+              'fill',
+              'div',
+              undefined,
+              undefined,
+              (c) => new go.Brush('Radial', { 0: c, 0.5: `${c}00` })
+            ),
 
             new go.TextBlock({
-                name: 'LABEL',
-                font: '9pt Figtree, sans-serif',
-                margin: 3,
-                editable: true
-              })
+              name: 'LABEL',
+              font: '9pt Figtree, sans-serif',
+              margin: 3,
+              editable: true,
+            })
               .theme('stroke', 'bgText')
               .bindTwoWay('text')
           )
       );
 
     // temporary links used by LinkingTool and RelinkingTool are also orthogonal:
-    this.myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Routing.Orthogonal;
-    this.myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Routing.Orthogonal;
-   
-   
-   
-   
-   
-   
-   
-   
-   
-  ////////////////////////////////////// 
+    this.myDiagram.toolManager.linkingTool.temporaryLink.routing =
+      go.Routing.Orthogonal;
+    this.myDiagram.toolManager.relinkingTool.temporaryLink.routing =
+      go.Routing.Orthogonal;
+
+
     this.load();
 
-    // this.myPalette = new go.Palette('myPaletteDiv', {
-    //   nodeTemplateMap: this.myPalette.nodeTemplateMap, // share the templates used by myDiagram
 
-    //   themeManager: this.myDiagram.themeManager, // share the ThemeManager used by myDiagram
-    //   model: new go.GraphLinksModel([
-    //     // specify the contents of the Palette
-    //     { text: '', category: 'Spacer' }, // Ajoute un espace en haut
-    //     { category: 'Start', text: 'Start' },
-    //     { category: 'End', text: 'End' },
-    //     { text: 'Intent' },
-    //     { text: 'Sleep' },
-    //     { text: 'Cmd stage' },
-
-    //     { category: 'Conditional', text: '???' },
-        
-    //     { category: 'Comment', text: 'Comment' }
-    //   ])
-    // });
-
-
-//////////////
+    // le contenu affiché dans la palette
     this.myPalette = new go.Palette('myPaletteDiv', {
-      nodeTemplateMap: this.myPalette.nodeTemplateMap, 
-      themeManager: this.myPalette.themeManager, 
+      nodeTemplateMap: this.myPalette.nodeTemplateMap,
+      themeManager: this.myPalette.themeManager,
       model: new go.GraphLinksModel([
         { text: '', category: 'Spacer' },
         { text: '', category: 'Spacer' },
@@ -487,22 +538,23 @@ export class GojsDiagramComponent implements AfterViewInit {
         { category: 'End', text: 'End' },
         { category: 'Conditional', text: 'Condition' },
         { category: 'Comment', text: 'Comment' },
-    
+
         { text: 'Task', category: 'Title' }, // Ajout du titre
-        { text: 'Intent' }, 
-        { text: 'Sleep' }, 
-        { text: 'Cmd Stage' }, 
-    
-        { text: ' Composite Task', category: 'Title' }, // Ajout du titre
-        { text: 'Intent' }, 
-        { text: 'Sleep' }, 
+        { text: 'Intent' },
+        { text: 'Sleep' },
         { text: 'Cmd Stage' },
-      ])
+
+        { text: ' Composite Task', category: 'Title' }, // Ajout du titre
+        { text: 'Intent' },
+        { text: 'Sleep' },
+        { text: 'Cmd Stage' },
+      ]),
     });
- ////////////   
     
   }
 
+
+  // les nodes personalisé 
   defineFigures(): void {
     go.Shape.defineFigureGenerator('Conditional', (shape, w, h) => {
       const geo = new go.Geometry();
@@ -518,33 +570,72 @@ export class GojsDiagramComponent implements AfterViewInit {
       return geo;
     });
 
-
     go.Shape.defineFigureGenerator('RoundedRectangle', (shape, w, h) => {
-      const radius = Math.min(w, h) * 0.2; // Rayon des coins arrondis (20% de la plus petite dimension)
+      const radius = Math.min(w, h) * 0.1; // Rayon des coins arrondis (20% de la plus petite dimension)
       const geo = new go.Geometry();
       const fig = new go.PathFigure(radius, 0, true); // Début du chemin
-  
+
       geo.add(fig);
-      
+
       // Ligne supérieure droite avec coin arrondi
       fig.add(new go.PathSegment(go.SegmentType.Line, w - radius, 0));
-      fig.add(new go.PathSegment(go.SegmentType.Arc, 270, 90, w - radius, radius, radius, radius));
-  
+      fig.add(
+        new go.PathSegment(
+          go.SegmentType.Arc,
+          270,
+          90,
+          w - radius,
+          radius,
+          radius,
+          radius
+        )
+      );
+
       // Ligne droite droite avec coin arrondi
       fig.add(new go.PathSegment(go.SegmentType.Line, w, h - radius));
-      fig.add(new go.PathSegment(go.SegmentType.Arc, 0, 90, w - radius, h - radius, radius, radius));
-  
+      fig.add(
+        new go.PathSegment(
+          go.SegmentType.Arc,
+          0,
+          90,
+          w - radius,
+          h - radius,
+          radius,
+          radius
+        )
+      );
+
       // Ligne inférieure avec coin arrondi
       fig.add(new go.PathSegment(go.SegmentType.Line, radius, h));
-      fig.add(new go.PathSegment(go.SegmentType.Arc, 90, 90, radius, h - radius, radius, radius));
-  
+      fig.add(
+        new go.PathSegment(
+          go.SegmentType.Arc,
+          90,
+          90,
+          radius,
+          h - radius,
+          radius,
+          radius
+        )
+      );
+
       // Ligne gauche avec coin arrondi
       fig.add(new go.PathSegment(go.SegmentType.Line, 0, radius));
-      fig.add(new go.PathSegment(go.SegmentType.Arc, 180, 90, radius, radius, radius, radius));
-  
+      fig.add(
+        new go.PathSegment(
+          go.SegmentType.Arc,
+          180,
+          90,
+          radius,
+          radius,
+          radius,
+          radius
+        )
+      );
+
       geo.spot1 = new go.Spot(0, 0); // Positionnement du texte et des connexions
       geo.spot2 = new go.Spot(1, 1);
-  
+
       return geo;
     });
 
@@ -565,30 +656,32 @@ export class GojsDiagramComponent implements AfterViewInit {
       return geo;
     });
   }
-  
-
 
   // Autres méthodes comme save(), load(), printDiagram(), etc. seront aussi définies ici.
 
   save(): void {
     if (!this.myDiagram) return;
-    
-    const savedModel = document.getElementById('mySavedModel') as HTMLTextAreaElement;
+
+    const savedModel = document.getElementById(
+      'mySavedModel'
+    ) as HTMLTextAreaElement;
     if (savedModel) {
       savedModel.value = this.myDiagram.model.toJson();
       this.myDiagram.isModified = false;
     }
   }
 
-
-  
   load(): void {
     if (!this.myDiagram) return;
 
-    const savedModel = document.getElementById('mySavedModel') as HTMLTextAreaElement;
+    const savedModel = document.getElementById(
+      'mySavedModel'
+    ) as HTMLTextAreaElement;
     if (savedModel) {
       this.myDiagram.model = go.Model.fromJson(savedModel.value);
     }
+
+    console.log(this.myDiagram.model)
   }
 
   // print the diagram by opening a new window holding SVG images of the diagram contents for each page
@@ -598,8 +691,8 @@ export class GojsDiagramComponent implements AfterViewInit {
     const svgWindow = window.open();
     if (!svgWindow) return;
 
-    svgWindow.document.title = "GoJS Flowchart";
-    svgWindow.document.body.style.margin = "0px";
+    svgWindow.document.title = 'GoJS Flowchart';
+    svgWindow.document.body.style.margin = '0px';
 
     const printSize = new go.Size(700, 960);
     const bnds = this.myDiagram.documentBounds;
@@ -612,12 +705,12 @@ export class GojsDiagramComponent implements AfterViewInit {
           scale: 1.0,
           position: new go.Point(x, y),
           size: printSize,
-          background: "white"
+          background: 'white',
         });
         if (svg) {
           svgWindow.document.body.appendChild(svg);
         }
-        
+
         x += printSize.width;
       }
       x = bnds.x;
@@ -630,56 +723,18 @@ export class GojsDiagramComponent implements AfterViewInit {
     }, 1);
   }
 
-  // changeTheme(): void {
-  //   if (!this.myDiagram) return;
-
-  //   const themeInput = document.getElementById('theme') as HTMLSelectElement;
-  //   if (themeInput) {
-  //     const selectedTheme = themeInput.value;
-  //     const colors = selectedTheme === 'dark' ? {
-  //       background: '#141e37',
-  //       text: '#fff',
-  //       step: '#414a8d',
-  //       conditional: '#88afa2',
-  //       comment: '#bfb674',
-  //       link: '#fdb71c',
-  //       linkOver: '#475569'
-  //     } : {
-  //       background: '#ede9e0',
-  //       text: '#000',
-  //       step: '#49939e',
-  //       conditional: '#6a9a8a',
-  //       comment: '#a691cc',
-  //       link: '#dcb263',
-  //       linkOver: '#cbd5e1'
-  //     };
-
-  //     this.myDiagram.div!.style.background = colors.background;
-  //     this.myDiagram.nodes.each(node => {
-  //       const textObject = node.findObject('TEXT');
-  //       if (textObject instanceof go.TextBlock) {
-  //         textObject.stroke = colors.text;
-  //       }
-        
-  //     });
-  //     console.log("Changement du thème en :", selectedTheme);
-  //   }
-    
-  // }
 
   changeTheme(): void {
     const myDiagram = go.Diagram.fromDiv('myDiagramDiv');
     if (myDiagram) {
-      const themeElement = document.getElementById('theme') as HTMLSelectElement;
+      const themeElement = document.getElementById(
+        'theme'
+      ) as HTMLSelectElement;
       if (themeElement) {
         myDiagram.themeManager.currentTheme = themeElement.value;
       }
     }
   }
-
-  
-
-
   
 }
 
