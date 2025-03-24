@@ -1,0 +1,59 @@
+   .phone-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .phone-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  
+  .phone-name {
+    flex-grow: 1;
+    margin-left: 10px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  /* 🔹 Bouton carré avec icône de poubelle */
+  .delete-button {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #d32f2f; /* Rouge */
+    border: none;
+    border-radius: 4px; /* Bouton carré */
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .delete-button mat-icon {
+    color: white; /* Icône blanche */
+    font-size: 22px;
+  }
+  
+  /* 🔹 Effet au survol et au clic */
+  .delete-button:hover {
+    background-color: #b71c1c; /* Rouge plus foncé */
+  }
+  
+  .delete-button:active {
+    background-color: #9a0007; /* Rouge encore plus foncé */
+  }
+
+  .button-close {
+    background-color: #f5f5f5;
+    color: #333;
+    margin-right: 10px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  

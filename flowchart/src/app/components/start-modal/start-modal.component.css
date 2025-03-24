@@ -1,0 +1,115 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .dialog-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    overflow: hidden;
+  }
+  
+  h2 {
+    color: #284B63;
+    padding: 16px;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .dialog-content {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .phone-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .phone-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+    background-color: #eee; /* Placeholder for images */
+  }
+  
+  .phone-name {
+    flex-grow: 1;
+    margin-left: 10px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  /* Custom style for the checkbox */
+  .custom-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3C6E71;
+    border-radius: 4px;
+    background-color: white;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  
+  .custom-checkbox:checked {
+    background-color: #3C6E71;
+    border-color: #3C6E71;
+  }
+  
+  .custom-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* Style for the buttons */
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+    border-top: 1px solid #eee;
+  }
+  
+  .button-close {
+    background-color: #f5f5f5;
+    color: #333;
+    margin-right: 10px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+  }
+  
+  .button-start {
+    background-color: #3C6E71;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .button-start:hover {
+    background-color: #2a5254;
+  }

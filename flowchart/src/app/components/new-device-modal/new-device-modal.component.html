@@ -1,0 +1,25 @@
+<h2 mat-dialog-title style="color: #284B63;">Add new device</h2>
+
+<mat-dialog-content class="dialog-content">
+
+<!-- Affichage du formulaire -->
+<mat-form-field appearance="outline">
+    <label>Device name</label>
+    <input matInput [(ngModel)]="DeviceName" class="custom-input">
+</mat-form-field>
+
+<input type="file" (change)="onFileSelected($event)" accept="image/*" #fileInput hidden>
+<button mat-raised-button (click)="fileInput.click()">Choose File</button>
+
+<div *ngIf="imagePreview">
+  <img [src]="imagePreview" class="preview-img" alt="Aperçu de l'image">
+  <p>{{ filePath }}</p>
+</div>
+
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button class="button-close" (click)="onCancel()">Close</button>
+  <button mat-button class="button-add" (click)="onSave()" >Add</button>
+</mat-dialog-actions>

@@ -1,6 +1,13 @@
 import { HtmlParser } from '@angular/compiler';
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import * as go from 'gojs';
+import { Subscription } from 'rxjs';
+import { CmdStage } from 'src/Models/CmdStage_Task';
+import { Composite_Task } from 'src/Models/CompositeTask';
+import { End_Task } from 'src/Models/End_Task';
+import { Sleep_Task } from 'src/Models/Sleep_Task';
+import { Start_Task } from 'src/Models/Start_Task';
+import { DiagramSelectionService } from 'src/Services/diagram-selection.service';
 
 @Component({
   selector: 'app-gojs-diagram',
@@ -10,7 +17,13 @@ import * as go from 'gojs';
 export class GojsDiagramComponent implements AfterViewInit {
   private myDiagram: go.Diagram | null = null;
   private myPalette: go.Palette | null = null;
-  constructor() {}
+  private saveSubscription!: Subscription;
+  private startSubscription!: Subscription;
+  task: any = {}; // Stocke le dictionnaire recu par le moadal ici
+  ////////
+  constructor(private selectionService: DiagramSelectionService) {}
+  //////////
+  // cmdstage!: CmdStage;
 
   ngAfterViewInit(): void {
     const diagramDiv = document.getElementById('myDiagramDiv');
@@ -83,15 +96,17 @@ export class GojsDiagramComponent implements AfterViewInit {
 
     this.myDiagram.themeManager.set('light', {
       colors: {
-        texte:"white",
+        texte: 'white',
         text: 'black',
-        start: '#064e3b',
+        start: 'white',
         step: '#E9E9E9',
-        conditional: '#6a9a8a',
-        end: '#7f1d1d',
-        comment: '#a691cc',
+        compositeTask: '#c4c4c4',
+        conditional: '#81929E',
+        end: 'gray',
+        comment: '#81929E',
         bgText: '#000',
-        link: '#dcb263',
+        link: '#3771B8',
+        // link: '#dcb263',
         linkOver: '#cbd5e1',
         div: '#FFFFFF',
         // div: '#ede9e0'
@@ -102,11 +117,12 @@ export class GojsDiagramComponent implements AfterViewInit {
     this.myPalette.themeManager.set('light', {
       colors: {
         text: 'black',
-        start: '#064e3b',
+        start: 'white',
         step: '#E9E9E9',
-        conditional: '#6a9a8a',
-        end: '#7f1d1d',
-        comment: '#a691cc',
+        compositeTask: '#c4c4c4',
+        conditional: '#81929E',
+        end: 'gray',
+        comment: '#81929E',
         bgText: '#000',
         link: '#dcb263',
         linkOver: '#cbd5e1',
@@ -119,8 +135,6 @@ export class GojsDiagramComponent implements AfterViewInit {
     const ICON_DIAMETER = 30; // Taille du cercle où l'image sera placée.
     const ICON_RIGHT_MARGIN = 60;
     const ICON_TOP_SHIFT = -10; // Déplacement vers le haut (valeur négative).
-
-
 
     // je peut l'utiliser si je veut ajouter un theme dark a mon app
     // this.myDiagram.themeManager.set('dark', {
@@ -136,10 +150,9 @@ export class GojsDiagramComponent implements AfterViewInit {
     //   }
     // });
 
-
-    // appel de la methode qui definis les nodes personalisées 
+    // appel de la methode qui definis les nodes personalisées
     this.defineFigures();
-    
+
     // fonction pour la position des node dans le diagramme
     function nodeStyle(node: go.Part) {
       node
@@ -148,9 +161,9 @@ export class GojsDiagramComponent implements AfterViewInit {
     }
 
     // Définit le style des formes (sans contour, cliquable).
-    function shapeStyle(shape: go.Shape) {
+    function shapeStyle(shape: go.Shape, strokeWidth: number) {
       shape.set({
-        strokeWidth: 0, // Supprime le contour
+        strokeWidth: strokeWidth, // Utilise la valeur passée en paramètre
         portId: '', // Définit toute la forme comme un port
         cursor: 'pointer', // Change le curseur en mode pointer (main)
       });
@@ -165,16 +178,16 @@ export class GojsDiagramComponent implements AfterViewInit {
 
     // configuration de la cercle de l'icon wifi
     function strokeStyle(shape: go.Shape): go.Shape {
-      return shape.set({
-        // fill: theme.colors.nodeBackground,
-        strokeWidth: STROKE_WIDTH,
-      })
-      .theme('fill', 'step');
+      return shape
+        .set({
+          // fill: theme.colors.nodeBackground,
+          strokeWidth: STROKE_WIDTH,
+        })
+        .theme('fill', 'step');
     }
 
-
-        // l'icon de ma node wifi
-    const NodeImage = (): go.Panel =>
+    // l'icon de ma node wifi
+    const NodeImage = (iconSource: string): go.Panel =>
       new go.Panel('Spot', {
         alignmentFocus: go.Spot.Top,
         alignment: new go.Spot(
@@ -190,7 +203,8 @@ export class GojsDiagramComponent implements AfterViewInit {
           desiredSize: new go.Size(ICON_DIAMETER, ICON_DIAMETER),
         }).apply(strokeStyle),
         new go.Picture({
-          source: 'assets/css/wifi.png',
+          // source: 'assets/css/wifi.png',
+          source: iconSource,
           scale: 0.05,
         })
       );
@@ -216,9 +230,10 @@ export class GojsDiagramComponent implements AfterViewInit {
             // fromSpot: go.Spot.AllSides → Peut envoyer des liens depuis n'importe quel côté.
             //toSpot: go.Spot.AllSides → Peut recevoir des liens de n'importe quel côté.
           })
-            .apply(shapeStyle)
+            .apply((shape) => shapeStyle(shape, 0))
             .theme('fill', 'step'), //utilise le couleur du attribut "step" selon theme choisi ,(déclaration des themes au dessus)
-          new go.TextBlock({ //configuration du texte ecrivé  dans la node de category ''
+          new go.TextBlock({
+            //configuration du texte ecrivé  dans la node de category ''
             margin: 12,
             maxSize: new go.Size(150, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
             wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
@@ -227,38 +242,20 @@ export class GojsDiagramComponent implements AfterViewInit {
           })
             .apply(textStyle)
             .bindTwoWay('text'),
-            NodeImage(), // l'icon de la node
+          NodeImage('assets/css/wifi.png') // l'icon de la node
         )
-        
     );
-
-    // ce composant et un composant personalisée construis par la fonction defineFigure et appelé ici pour etre affiché dans le diagramme
-    this.myDiagram.nodeTemplateMap.add(
-      'Conditional',
-      new go.Node('Auto').apply(nodeStyle).add(
-        new go.Shape('Conditional', { fromLinkable: true, toLinkable: true })
-          .apply(shapeStyle)
-          .theme('fill', 'conditional'),
-        new go.TextBlock({
-          margin: 8,
-          maxSize: new go.Size(160, NaN),
-          wrap: go.Wrap.Fit,
-          textAlign: 'center',
-          editable: true,
-          stroke: "white" 
-        })
-          // .apply(textStyle)
-          .bindTwoWay('text')
-      )
-    );
-
     this.myDiagram.nodeTemplateMap.add(
       'Start',
       new go.Node('Auto').apply(nodeStyle).add(
-        new go.Shape('Capsule', { fromLinkable: true })
-          .apply(shapeStyle)
+        new go.Shape('Circle', { fromLinkable: true, stroke: 'gray' })
+          .apply((shape) => shapeStyle(shape, 2))
           .theme('fill', 'start'),
-        new go.TextBlock('Start', { margin: new go.Margin(5, 6),stroke: "white" })
+        new go.TextBlock({
+          margin: new go.Margin(5),
+          stroke: 'white',
+          font: 'bold 7px sans-serif',
+        })
           // .apply(textStyle)
           .bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
       )
@@ -266,16 +263,37 @@ export class GojsDiagramComponent implements AfterViewInit {
 
     this.myDiagram.nodeTemplateMap.add(
       'End',
-      new go.Node('Auto')
-        .apply(nodeStyle)
-        .add(
-          new go.Shape('Capsule', { toLinkable: true })
-            .apply(shapeStyle)
-            .theme('fill', 'end'),
-          new go.TextBlock('End', { margin: new go.Margin(5, 6) ,stroke: "white"} )
-            // .apply(textStyle)
-            .bind('text')
-        )
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Circle', { toLinkable: true })
+          .apply((shape) => shapeStyle(shape, 0))
+          .theme('fill', 'end'),
+        new go.TextBlock({
+          margin: new go.Margin(6),
+          stroke: 'gray',
+          font: 'bold 8px sans-serif',
+        })
+          // .apply(textStyle)
+          .bind('text')
+      )
+    );
+    // ce composant et un composant personalisée construis par la fonction defineFigure et appelé ici pour etre affiché dans le diagramme
+    this.myDiagram.nodeTemplateMap.add(
+      'Conditional',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Conditional', { fromLinkable: true, toLinkable: true })
+          .apply((shape) => shapeStyle(shape, 0))
+          .theme('fill', 'conditional'),
+        new go.TextBlock({
+          margin: 8,
+          maxSize: new go.Size(160, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+          stroke: 'white',
+        })
+          // .apply(textStyle)
+          .bindTwoWay('text')
+      )
     );
 
     this.myDiagram.nodeTemplateMap.add(
@@ -297,8 +315,107 @@ export class GojsDiagramComponent implements AfterViewInit {
         // no ports, because no links are allowed to connect with a comment
       )
     );
+    this.myDiagram.nodeTemplateMap.add(
+      'Sleep',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('RoundedRectangle', {
+          width: 150,
+          height: 100,
+          fromLinkable: true,
+          toLinkable: true,
+          fromSpot: go.Spot.AllSides,
+          toSpot: go.Spot.AllSides,
+        })
+          .apply((shape) => shapeStyle(shape, 0))
+          .theme('fill', 'step'),
+        new go.TextBlock({
+          margin: 12,
+          maxSize: new go.Size(150, NaN),
+          wrap: go.Wrap.Fit,
+          editable: true,
+          alignment: new go.Spot(0.5, 0.8),
+        })
+          .apply(textStyle)
+          .bindTwoWay('text'),
+        NodeImage('assets/css/horloge.png')
+      )
+    );
 
-    
+    this.myDiagram.nodeTemplateMap.add(
+      'Cmd Stage',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('RoundedRectangle', {
+          width: 150,
+          height: 100,
+          fromLinkable: true,
+          toLinkable: true,
+          fromSpot: go.Spot.AllSides,
+          toSpot: go.Spot.AllSides,
+        })
+          .apply((shape) => shapeStyle(shape, 0))
+          .theme('fill', 'step'),
+        new go.TextBlock({
+          margin: 12,
+          maxSize: new go.Size(150, NaN),
+          wrap: go.Wrap.Fit,
+          editable: true,
+          alignment: new go.Spot(0.5, 0.8),
+        })
+          .apply(textStyle)
+          .bindTwoWay('text'),
+        NodeImage('assets/css/terminal.png')
+      )
+    );
+
+    ///tache compose////
+    this.myDiagram.nodeTemplateMap.add(
+      'CompositeTask', // the default category , '' :
+      new go.Node('Auto')
+        .apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
+        .add(
+          new go.Shape('RoundedRectangle', {
+            // si on annule el width et height , la node adapte ca taille selon le taille du texte
+            width: 150,
+            height: 100,
+            fromLinkable: true,
+            toLinkable: true,
+            fromSpot: go.Spot.AllSides,
+            toSpot: go.Spot.AllSides,
+          })
+            .apply((shape) => shapeStyle(shape, 0))
+            .theme('fill', 'compositeTask'), //utilise le couleur du attribut "step" selon theme choisi ,(déclaration des themes au dessus)
+          new go.TextBlock({
+            //configuration du texte ecrivé  dans la node de category ''
+            margin: 12,
+            maxSize: new go.Size(150, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
+            wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
+            editable: true, // Le texte peut être modifié par l'utilisateur.
+            alignment: new go.Spot(0.5, 0.8),
+          })
+            .apply(textStyle)
+            .bindTwoWay('text'),
+          new go.Picture() // Ajout de l'icône dynamiquement
+            .bind('source', 'icon', (icon) => `assets/css/${icon}`)
+            .set({ desiredSize: new go.Size(30, 30) })
+            .set({ alignment: new go.Spot(0.5, 0.2) }) // Déplace l'icône vers le haut
+        )
+    );
+
+    /////////////
+    this.myDiagram.addDiagramListener('ObjectSingleClicked', (e) => {
+      //addDiagramListener est une méthode de GoJS qui permet d'écouter des événements spécifiques sur le diagramme.
+      //'ObjectSingleClicked' est l'événement déclenché lorsqu'un utilisateur clique une seule fois sur un élément du diagramme.
+      //(e) => { ... } est une fonction fléchée qui s'exécute à chaque fois que cet événement se produit.
+      const part = e.subject.part; //e.subject.part permet d'obtenir la "part" GoJS associée, qui peut être un Node, un Link ou un autre élément du diagramme.
+      if (part instanceof go.Node) {
+        //Chaque Node dans GoJS possède un attribut data qui contient ses données associées (par exemple, son texte, son ID, etc.).
+        this.selectionService.setSelectedNode(part.data); //this.selectionService.setSelectedNode(part.data); envoie ces données au service Angular (selectionService) pour les partager avec d'autres composants (ex: la sidebar).
+      }
+    });
+    ////////////////
+
+    ///fin///
+
     // definition mtaa les nodes mtaa palette
     this.myPalette.nodeTemplateMap.add(
       '', // the default category , '' :
@@ -318,7 +435,7 @@ export class GojsDiagramComponent implements AfterViewInit {
             // fromSpot: go.Spot.AllSides → Peut envoyer des liens depuis n'importe quel côté.
             //toSpot: go.Spot.AllSides → Peut recevoir des liens de n'importe quel côté.
           })
-            .apply(shapeStyle)
+            .apply((shape) => shapeStyle(shape, 0))
             .theme('fill', 'step'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9
           new go.TextBlock({
             margin: 12,
@@ -330,72 +447,6 @@ export class GojsDiagramComponent implements AfterViewInit {
             .bindTwoWay('text')
         )
     );
-
-    this.myPalette.nodeTemplateMap.add(
-      'Conditional',
-      new go.Node('Auto').apply(nodeStyle).add(
-        new go.Shape('Conditional', { fromLinkable: true, toLinkable: true })
-          .apply(shapeStyle)
-          .theme('fill', 'conditional'),
-        new go.TextBlock({
-          margin: 8,
-          maxSize: new go.Size(160, NaN),
-          wrap: go.Wrap.Fit,
-          textAlign: 'center',
-          editable: true,
-          stroke: "white" 
-        })
-          // .apply(textStyle)
-          .bindTwoWay('text')
-      )
-    );
-
-    this.myPalette.nodeTemplateMap.add(
-      'Start',
-      new go.Node('Auto').apply(nodeStyle).add(
-        new go.Shape('Capsule', { fromLinkable: true })
-          .apply(shapeStyle)
-          .theme('fill', 'start'),
-        new go.TextBlock('Start', { margin: new go.Margin(5, 6),stroke: "white" })
-          // .apply(textStyle)
-          .bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
-      )
-    );
-
-    this.myPalette.nodeTemplateMap.add(
-      'End',
-      new go.Node('Auto')
-        .apply(nodeStyle)
-        .add(
-          new go.Shape('Capsule', { toLinkable: true })
-            .apply(shapeStyle)
-            .theme('fill', 'end'),
-          new go.TextBlock('End', { margin: new go.Margin(5, 6),stroke: "white" })
-            // .apply(textStyle)
-            .bind('text')
-        )
-    );
-
-    this.myPalette.nodeTemplateMap.add(
-      'Comment',
-      new go.Node('Auto').apply(nodeStyle).add(
-        new go.Shape('File', { strokeWidth: 3 })
-          .theme('fill', 'div')
-          .theme('stroke', 'comment'),
-        new go.TextBlock({
-          font: '9pt Figtree, sans-serif',
-          margin: 8,
-          maxSize: new go.Size(200, NaN),
-          wrap: go.Wrap.Fit,
-          textAlign: 'center',
-          editable: true,
-        })
-          .theme('stroke', 'bgText')
-          .bindTwoWay('text')
-        // no ports, because no links are allowed to connect with a comment
-      )
-    );
-
     // Définir un gabarit pour l’espaceur (élément invisible)
     this.myPalette.nodeTemplateMap.add(
       'Spacer',
@@ -416,17 +467,181 @@ export class GojsDiagramComponent implements AfterViewInit {
         $(
           go.Shape,
           'RoundedRectangle',
-          { fill: '#E4ECF7', strokeWidth: 0, height: 30, width: 180 } // Fond bleu clair
+          { fill: '#284B63', strokeWidth: 0, height: 30, width: 180 } // Fond bleu clair
         ),
         $(
           go.TextBlock,
-          { margin: 5, font: 'bold 12px sans-serif', stroke: 'gray' },
+          { margin: 5, font: 'bold 12px sans-serif', stroke: 'white' },
           new go.Binding('text', 'text')
         )
       )
     );
+    this.myPalette.nodeTemplateMap.add(
+      'Start',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Circle', { fromLinkable: true, stroke: 'gray' })
+          .apply((shape) => shapeStyle(shape, 2))
+          .theme('fill', 'start'),
+        new go.TextBlock({
+          margin: new go.Margin(5),
+          stroke: 'white',
+          font: 'bold 7px sans-serif',
+        })
+          // .apply(textStyle)
+          .bind('text') //Liaison simple (bind('text')) → Peut afficher un texte dynamique, mais pas bidirectionnellement.
+      )
+    );
 
+    this.myPalette.nodeTemplateMap.add(
+      'End',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Circle', { toLinkable: true })
+          .apply((shape) => shapeStyle(shape, 0))
+          .theme('fill', 'end'),
+        new go.TextBlock({
+          margin: new go.Margin(6),
+          stroke: 'gray',
+          font: 'bold 8px sans-serif',
+        })
+          // .apply(textStyle)
+          .bind('text')
+      )
+    );
+    this.myPalette.nodeTemplateMap.add(
+      'Conditional',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('Conditional', { fromLinkable: true, toLinkable: true })
+          .apply((shape) => shapeStyle(shape, 0))
+          .theme('fill', 'conditional'),
+        new go.TextBlock({
+          margin: 8,
+          maxSize: new go.Size(160, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+          stroke: 'white',
+        })
+          // .apply(textStyle)
+          .bindTwoWay('text')
+      )
+    );
+    this.myPalette.nodeTemplateMap.add(
+      'Comment',
+      new go.Node('Auto').apply(nodeStyle).add(
+        new go.Shape('File', { strokeWidth: 3 })
+          .theme('fill', 'div')
+          .theme('stroke', 'comment'),
+        new go.TextBlock({
+          font: '9pt Figtree, sans-serif',
+          margin: 8,
+          maxSize: new go.Size(200, NaN),
+          wrap: go.Wrap.Fit,
+          textAlign: 'center',
+          editable: true,
+        })
+          .theme('stroke', 'bgText')
+          .bindTwoWay('text')
+        // no ports, because no links are allowed to connect with a comment
+      )
+    );
+    this.myPalette.nodeTemplateMap.add(
+      'Sleep', // the default category , '' :
+      new go.Node('Auto')
+        .apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
+        .add(
+          new go.Shape('RoundedRectangle', {
+            width: 180,
+            height: 40,
+            fromLinkable: true,
+            toLinkable: true,
+            fromSpot: go.Spot.AllSides,
+            toSpot: go.Spot.AllSides,
+          })
+            .apply((shape) => shapeStyle(shape, 0))
+            .theme('fill', 'step'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9
+          new go.TextBlock({
+            margin: 12,
+            maxSize: new go.Size(180, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
+            wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
+            editable: true, // Le texte peut être modifié par l'utilisateur.
+          })
+            .apply(textStyle)
+            .bindTwoWay('text'),
+          new go.Picture({
+            source: 'assets/css/horloge.png', // Correction du chemin d'image
+            desiredSize: new go.Size(20, 20),
+            alignment: new go.Spot(0.05, 0.5), // Positionnement
+          })
+        )
+    );
+    this.myPalette.nodeTemplateMap.add(
+      'Cmd Stage', // the default category , '' :
+      new go.Node('Auto')
+        .apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
+        .add(
+          new go.Shape('RoundedRectangle', {
+            width: 180,
+            height: 40,
+            fromLinkable: true,
+            toLinkable: true,
+            fromSpot: go.Spot.AllSides,
+            toSpot: go.Spot.AllSides,
+          })
+            .apply((shape) => shapeStyle(shape, 0))
+            .theme('fill', 'step'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9
+          new go.TextBlock({
+            margin: 12,
+            maxSize: new go.Size(180, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
+            wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
+            editable: true, // Le texte peut être modifié par l'utilisateur.
+          })
+            .apply(textStyle)
+            .bindTwoWay('text'),
+          new go.Picture({
+            source: 'assets/css/terminal.png', // Correction du chemin d'image
+            desiredSize: new go.Size(20, 20),
+            alignment: new go.Spot(0.05, 0.5), // Positionnement
+          })
+        )
+    );
 
+    ///tache compose////
+    this.myPalette.nodeTemplateMap.add(
+      'CompositeTask', // the default category , '' :
+      new go.Node('Auto')
+        .apply(nodeStyle) //Crée un nœud avec un layout automatique ('Auto'), ce qui signifie que son contenu sera ajusté à sa forme.
+        .add(
+          new go.Shape('RoundedRectangle', {
+            width: 180,
+            height: 40,
+            fromLinkable: true,
+            toLinkable: true,
+            fromSpot: go.Spot.AllSides,
+            toSpot: go.Spot.AllSides,
+
+            // fromLinkable: true → Peut envoyer des connexions (Link).
+            // toLinkable: true → Peut recevoir des connexions.
+            // fromSpot: go.Spot.AllSides → Peut envoyer des liens depuis n'importe quel côté.
+            //toSpot: go.Spot.AllSides → Peut recevoir des liens de n'importe quel côté.
+          })
+            .apply((shape) => shapeStyle(shape, 0))
+            .theme('fill', 'compositeTask'), //yestaaml el couleur eli mahtout fel step selon theme choisi ,wdeclaration mtaa les themes elfou9
+          new go.TextBlock({
+            margin: 12,
+            maxSize: new go.Size(180, NaN), //Limite la largeur à 160 pixels, mais la hauteur est illimitée (NaN).
+            wrap: go.Wrap.Fit, // Active le retour à la ligne si le texte dépasse la largeur maximale.
+            editable: true, // Le texte peut être modifié par l'utilisateur.
+          })
+            .apply(textStyle)
+            .bindTwoWay('text'),
+          new go.Picture() // Ajout de l'icône dynamiquement
+            .bind('source', 'icon', (icon) => `assets/css/${icon}`)
+            .set({ desiredSize: new go.Size(20, 20) })
+            .set({ alignment: new go.Spot(0.05, 0.5) }) // Déplace l'icône vers le haut
+        )
+    );
+
+    ///fin///
 
     // replace the default Link template in the linkTemplateMap
     this.myDiagram.linkTemplate = new go.Link({
@@ -522,39 +737,190 @@ export class GojsDiagramComponent implements AfterViewInit {
     this.myDiagram.toolManager.relinkingTool.temporaryLink.routing =
       go.Routing.Orthogonal;
 
-
     this.load();
 
+    // activer cette ligne pour vider le locale storage//
+    // localStorage.clear();
+
+    //////cette function affiche le stockage du locale storage dans la console/////
+    function getLocalStorageSize(): number {
+      let total = 0;
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          total += localStorage.getItem(key)?.length || 0;
+        }
+      }
+      return total / 1024; // Taille en Ko
+    }
+
+    console.log(
+      'Espace utilisé dans LocalStorage:',
+      getLocalStorageSize(),
+      'Ko'
+    );
+    //////fin/////
 
     // le contenu affiché dans la palette
+    const savedTasks = JSON.parse(
+      localStorage.getItem('compositeTasks') || '[]'
+    );
+
     this.myPalette = new go.Palette('myPaletteDiv', {
       nodeTemplateMap: this.myPalette.nodeTemplateMap,
       themeManager: this.myPalette.themeManager,
       model: new go.GraphLinksModel([
-        { text: '', category: 'Spacer' },
-        { text: '', category: 'Spacer' },
-        { text: 'CheckPoint', category: 'Title' }, // Ajout du titre
+        { category: 'Spacer', text: '' },
+        { category: 'Spacer', text: '' },
+        { category: 'Title', text: 'CheckPoint' }, // Ajout du titre
         { category: 'Start', text: 'Start' },
         { category: 'End', text: 'End' },
         { category: 'Conditional', text: 'Condition' },
         { category: 'Comment', text: 'Comment' },
 
-        { text: 'Task', category: 'Title' }, // Ajout du titre
-        { text: 'Intent' },
-        { text: 'Sleep' },
-        { text: 'Cmd Stage' },
+        { category: 'Title', text: 'Task' }, // Ajout du titre
+        // { text: 'Intent' },
+        {
+          category: 'Sleep',
+          text: 'Sleep',
+          description:
+            'This task sets a delay before executing the next action (millisecond)',
+          Time_sleep: 500,
+        },
+        {
+          category: 'Cmd Stage',
+          text: 'Cmd Stage',
+          description:
+            'This task executes a specified CMD command to automate a process',
+          cmd: '',
+          root: false,
+        },
 
-        { text: ' Composite Task', category: 'Title' }, // Ajout du titre
-        { text: 'Intent' },
-        { text: 'Sleep' },
-        { text: 'Cmd Stage' },
+        { category: 'Title', text: ' Composite Task' }, // Ajout du titre
+
+        // { text: 'Sleep' },
+        // { text: 'Cmd Stage' },
+        ...savedTasks, // Ajouter les tâches sauvegardées
       ]),
     });
-    
+
+    this.saveSubscription = this.selectionService.saveAction$.subscribe(() => {
+      this.save();
+    });
+    /////
+    this.startSubscription = this.selectionService.startDiagram$.subscribe(
+      () => {
+        this.start();
+      }
+    );
+
+    /////les données envoyé par le modal//
+
+    this.selectionService.currentTask.subscribe((task) => {
+      if (task) {
+        this.task = task;
+        console.log('Tâche reçue :', this.task);
+        this.addTaskToPalette(this.task);
+      }
+    });
+    //////fin///////
+
+    /////suppresion de composite task dés la palette//
+    this.selectionService.deleteTask$.subscribe((taskTitle) => {
+      this.removeTaskFromPalette(taskTitle);
+    });
+    //////fin///////
   }
 
+  //////ajouter un composant dans la palette par les données recu du modal//////
+  addTaskToPalette(task: any) {
+    if (!this.myPalette) return;
 
-  // les nodes personalisé 
+    // Récupérer le modèle actuel et ajouter la nouvelle tâche
+    const model = this.myPalette.model as go.GraphLinksModel;
+
+    // Créer un nouvel objet tâche avec les attributs de `task`
+    const newTaskNode = {
+      category: 'CompositeTask',
+      text: task.title, // Utilise la valeur de la tâche reçue
+      description: task.description || '',
+      // icon:task.icon,
+      icon: task.icon,
+      pipeline: JSON.parse(task.pipeline),
+    };
+
+    // Ajouter l'élément au modèle
+    model.addNodeData(newTaskNode);
+
+    console.log('Nouvelle tâche ajoutée à la palette :', newTaskNode);
+    // Récupérer les tâches enregistrées
+    const savedTasks = JSON.parse(
+      localStorage.getItem('compositeTasks') || '[]'
+    );
+
+    // Ajouter la nouvelle tâche
+    savedTasks.push(newTaskNode);
+
+    // Sauvegarder la liste mise à jour
+    localStorage.setItem('compositeTasks', JSON.stringify(savedTasks));
+  }
+  //////fin///////
+
+    //////supprimer composite task dans la palette //////
+
+  // removeTaskFromPalette(taskTitle: string) {
+  //   if (!this.myPalette) return;
+  
+  //   // Récupérer le modèle actuel
+  //   const model = this.myPalette.model as go.GraphLinksModel;
+  
+  //   // Trouver l’élément à supprimer
+  //   const nodeToRemove = model.nodeDataArray.find((node: any) => node.text === taskTitle);
+  
+  //   if (nodeToRemove) {
+  //     // Supprimer du modèle GoJS
+  //     model.removeNodeData(nodeToRemove);
+  
+  //     console.log('Tâche supprimée de la palette :', nodeToRemove);
+  
+  //     // Récupérer les tâches enregistrées dans le localStorage
+  //     let savedTasks = JSON.parse(localStorage.getItem('compositeTasks') || '[]');
+  
+  //     // Filtrer pour supprimer la tâche correspondante
+  //     savedTasks = savedTasks.filter((task: any) => task.text !== taskTitle);
+  
+  //     // Sauvegarder la liste mise à jour
+  //     localStorage.setItem('compositeTasks', JSON.stringify(savedTasks));
+  //   }
+  // }
+
+  removeTaskFromPalette(taskTitle: string) {
+    if (!this.myPalette) return;
+  
+    const model = this.myPalette.model as go.GraphLinksModel;
+    const nodeToRemove = model.nodeDataArray.find((node: any) => node.text === taskTitle);
+  
+    if (nodeToRemove) {
+      model.removeNodeData(nodeToRemove);
+      console.log('Tâche supprimée de la palette :', nodeToRemove);
+  
+      let savedTasks = JSON.parse(localStorage.getItem('compositeTasks') || '[]');
+      savedTasks = savedTasks.filter((task: any) => task.text !== taskTitle);
+      localStorage.setItem('compositeTasks', JSON.stringify(savedTasks));
+    }
+  }
+    //////fin///////
+  
+
+  ngOnDestroy() {
+    if (this.saveSubscription) {
+      this.saveSubscription.unsubscribe();
+    }
+    if (this.startSubscription) {
+      this.startSubscription.unsubscribe();
+    }
+  }
+
+  // les nodes personalisé
   defineFigures(): void {
     go.Shape.defineFigureGenerator('Conditional', (shape, w, h) => {
       const geo = new go.Geometry();
@@ -659,6 +1025,7 @@ export class GojsDiagramComponent implements AfterViewInit {
 
   // Autres méthodes comme save(), load(), printDiagram(), etc. seront aussi définies ici.
 
+  // cette methode charge le modele et le convertir en format json et affecter dans une constante savedModel et afficher leur contenu (html) dans l'ecran
   save(): void {
     if (!this.myDiagram) return;
 
@@ -668,8 +1035,237 @@ export class GojsDiagramComponent implements AfterViewInit {
     if (savedModel) {
       savedModel.value = this.myDiagram.model.toJson();
       this.myDiagram.isModified = false;
+      const jsonData = savedModel.value; // Récupération du JSON sous forme de string
+      const parsedData = JSON.parse(jsonData);
+      console.log(parsedData);
+
+      this.selectionService.setPipeline(jsonData);
     }
   }
+
+  // start(): void {
+  //   if (!this.myDiagram) return;
+  
+  //   const savedModel = document.getElementById(
+  //     'mySavedModel'
+  //   ) as HTMLTextAreaElement;
+  //   if (!savedModel) return;
+  
+  //   const jsonData = savedModel.value;
+  //   const parsedData = JSON.parse(jsonData);
+  
+  //   const nodeArray = parsedData.nodeDataArray;
+  //   const linkArray = parsedData.linkDataArray;
+  
+  //   let cmdStages: CmdStage[] = [];
+  //   let sleepTasks: Sleep_Task[] = [];
+  //   let startTasks: Start_Task[] = [];
+  //   let endTasks: End_Task[] = [];
+  //   let compositeTasks: Composite_Task[] = [];
+  //   let links: { from: string; to: string }[] = [];
+  
+  //   function parseCompositeTask(node: any): Composite_Task {
+  //     let subCmdStages: CmdStage[] = [];
+  //     let subSleepTasks: Sleep_Task[] = [];
+  //     let subStartTasks: Start_Task[] = [];
+  //     let subEndTasks: End_Task[] = [];
+  //     let subCompositeTasks: Composite_Task[] = [];
+  //     let subLinks: { from: string; to: string }[] = [];
+  
+  //     if (node.pipeline) {
+  //       node.pipeline.nodeDataArray.forEach((subNode: any) => {
+  //         switch (subNode.category) {
+  //           case 'Cmd Stage':
+  //             subCmdStages.push(new CmdStage(subNode.key.toString(), subNode.text, subNode.cmd || "", subNode.root ? 1 : 0));
+  //             break;
+  //           case 'Sleep':
+  //             subSleepTasks.push(new Sleep_Task(subNode.key.toString(), subNode.text, subNode.Time_sleep));
+  //             break;
+  //           case 'Start':
+  //             subStartTasks.push(new Start_Task(subNode.key.toString(), subNode.text));
+  //             break;
+  //           case 'End':
+  //             subEndTasks.push(new End_Task(subNode.key.toString(), subNode.text));
+  //             break;
+  //           case 'CompositeTask':
+  //             subCompositeTasks.push(parseCompositeTask(subNode));
+  //             break;
+  //         }
+  //       });
+  
+  //       subLinks = node.pipeline.linkDataArray.map((subLink: any) => ({
+  //         from: subLink.from.toString(),
+  //         to: subLink.to.toString(),
+  //       }));
+  //     }
+  
+  //     return new Composite_Task(
+  //       node.key.toString(),
+  //       node.text,
+  //       subCmdStages.length ? subCmdStages : [],
+  //       subSleepTasks.length ? subSleepTasks : [],
+  //       subStartTasks.length ? subStartTasks : [],
+  //       subEndTasks.length ? subEndTasks : [],
+  //       subCompositeTasks.length ? subCompositeTasks : [],
+  //       subLinks.length ? subLinks : []
+  //     );
+  //   }
+  
+  //   nodeArray.forEach((node: any) => {
+  //     switch (node.category) {
+  //       case 'Cmd Stage':
+  //         cmdStages.push(new CmdStage(node.key.toString(), node.text, node.cmd || "", node.root ? 1 : 0));
+  //         break;
+  //       case 'Sleep':
+  //         sleepTasks.push(new Sleep_Task(node.key.toString(), node.text, node.Time_sleep));
+  //         break;
+  //       case 'Start':
+  //         startTasks.push(new Start_Task(node.key.toString(), node.text));
+  //         break;
+  //       case 'End':
+  //         endTasks.push(new End_Task(node.key.toString(), node.text));
+  //         break;
+  //       case 'CompositeTask':
+  //         compositeTasks.push(parseCompositeTask(node));
+  //         break;
+  //     }
+  //   });
+  
+  //   links = linkArray.map((link: any) => ({
+  //     from: link.from.toString(),
+  //     to: link.to.toString(),
+  //   }));
+  
+  //   let formattedJson: any = {};
+  //   if (cmdStages.length) formattedJson['Cmd Stage'] = cmdStages;
+  //   if (sleepTasks.length) formattedJson['Sleep'] = sleepTasks;
+  //   if (startTasks.length) formattedJson['Start'] = startTasks;
+  //   if (endTasks.length) formattedJson['End'] = endTasks;
+  //   if (compositeTasks.length) formattedJson['CompositeTask'] = compositeTasks;
+  //   if (links.length) formattedJson['Links'] = links;
+  
+  //   const outputTextArea = document.getElementById(
+  //     'outputJson'
+  //   ) as HTMLTextAreaElement;
+  //   if (outputTextArea) {
+  //     outputTextArea.value = JSON.stringify(formattedJson, null, 2);
+  //   }
+  // }
+  start(): void {
+    if (!this.myDiagram) return;
+  
+    const savedModel = document.getElementById(
+      'mySavedModel'
+    ) as HTMLTextAreaElement;
+    if (!savedModel) return;
+  
+    const jsonData = savedModel.value;
+    const parsedData = JSON.parse(jsonData);
+  
+    const nodeArray = parsedData.nodeDataArray;
+    const linkArray = parsedData.linkDataArray;
+  
+    let cmdStages: CmdStage[] = [];
+    let sleepTasks: Sleep_Task[] = [];
+    let startTasks: Start_Task[] = [];
+    let endTasks: End_Task[] = [];
+    let compositeTasks: Composite_Task[] = [];
+    let links: { from: string; to: string }[] = [];
+  
+    function parseCompositeTask(node: any): Composite_Task {
+      let subCmdStages: CmdStage[] = [];
+      let subSleepTasks: Sleep_Task[] = [];
+      let subStartTasks: Start_Task[] = [];
+      let subEndTasks: End_Task[] = [];
+      let subCompositeTasks: Composite_Task[] = [];
+      let subLinks: { from: string; to: string }[] = [];
+  
+      if (node.pipeline) {
+        node.pipeline.nodeDataArray.forEach((subNode: any) => {
+          switch (subNode.category) {
+            case 'Cmd Stage':
+              subCmdStages.push(new CmdStage(subNode.key.toString(), subNode.text, subNode.cmd || "", subNode.root ? 1 : 0));
+              break;
+            case 'Sleep':
+              subSleepTasks.push(new Sleep_Task(subNode.key.toString(), subNode.text, subNode.Time_sleep));
+              break;
+            case 'Start':
+              subStartTasks.push(new Start_Task(subNode.key.toString(), subNode.text));
+              break;
+            case 'End':
+              subEndTasks.push(new End_Task(subNode.key.toString(), subNode.text));
+              break;
+            case 'CompositeTask':
+              subCompositeTasks.push(parseCompositeTask(subNode));
+              break;
+          }
+        });
+  
+        subLinks = node.pipeline.linkDataArray.map((subLink: any) => ({
+          from: subLink.from.toString(),
+          to: subLink.to.toString(),
+        }));
+      }
+  
+      // Créer un objet composite task qui ne contient que les tableaux non vides
+      const compositeTask: any = {
+        id: node.key.toString(),
+        title: node.text
+      };
+  
+      if (subCmdStages.length) compositeTask.cmdStages = subCmdStages;
+      if (subSleepTasks.length) compositeTask.sleepTasks = subSleepTasks;
+      if (subStartTasks.length) compositeTask.startTasks = subStartTasks;
+      if (subEndTasks.length) compositeTask.endTasks = subEndTasks;
+      if (subCompositeTasks.length) compositeTask.compositeTasks = subCompositeTasks;
+      if (subLinks.length) compositeTask.links = subLinks;
+  
+      return compositeTask as Composite_Task;
+    }
+  
+    nodeArray.forEach((node: any) => {
+      switch (node.category) {
+        case 'Cmd Stage':
+          cmdStages.push(new CmdStage(node.key.toString(), node.text, node.cmd || "", node.root ? 1 : 0));
+          break;
+        case 'Sleep':
+          sleepTasks.push(new Sleep_Task(node.key.toString(), node.text, node.Time_sleep));
+          break;
+        case 'Start':
+          startTasks.push(new Start_Task(node.key.toString(), node.text));
+          break;
+        case 'End':
+          endTasks.push(new End_Task(node.key.toString(), node.text));
+          break;
+        case 'CompositeTask':
+          compositeTasks.push(parseCompositeTask(node));
+          break;
+      }
+    });
+  
+    links = linkArray.map((link: any) => ({
+      from: link.from.toString(),
+      to: link.to.toString(),
+    }));
+  
+    // Création du JSON formaté qui ne contient que les tableaux non vides
+    let formattedJson: any = {};
+    if (cmdStages.length) formattedJson['Cmd Stage'] = cmdStages;
+    if (sleepTasks.length) formattedJson['Sleep'] = sleepTasks;
+    if (startTasks.length) formattedJson['Start'] = startTasks;
+    if (endTasks.length) formattedJson['End'] = endTasks;
+    if (compositeTasks.length) formattedJson['CompositeTask'] = compositeTasks;
+    if (links.length) formattedJson['Links'] = links;
+  
+    const outputTextArea = document.getElementById(
+      'outputJson'
+    ) as HTMLTextAreaElement;
+    if (outputTextArea) {
+      outputTextArea.value = JSON.stringify(formattedJson, null, 2);
+    }
+  }
+  
+  
 
   load(): void {
     if (!this.myDiagram) return;
@@ -681,7 +1277,7 @@ export class GojsDiagramComponent implements AfterViewInit {
       this.myDiagram.model = go.Model.fromJson(savedModel.value);
     }
 
-    console.log(this.myDiagram.model)
+    // console.log(this.myDiagram.model)
   }
 
   // print the diagram by opening a new window holding SVG images of the diagram contents for each page
@@ -723,7 +1319,6 @@ export class GojsDiagramComponent implements AfterViewInit {
     }, 1);
   }
 
-
   changeTheme(): void {
     const myDiagram = go.Diagram.fromDiv('myDiagramDiv');
     if (myDiagram) {
@@ -735,7 +1330,4 @@ export class GojsDiagramComponent implements AfterViewInit {
       }
     }
   }
-  
 }
-
-

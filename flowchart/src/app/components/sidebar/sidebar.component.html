@@ -1,9 +1,68 @@
 <div class="sidebar">
-    <ul>
-      <li><a href="#">Send brodcast</a></li>
-      <li><a href="#">Start activity</a></li>
-      <li><a href="#">Package name</a></li>
-      <li><a href="#">Data</a></li>
-    </ul>
-  </div>
+
+  <div *ngIf="selectedNode">
+    <h3 style="text-align: center;">Task Configuration</h3>
+    <p style="text-align: center; "><strong>Task :</strong> {{ selectedNode.text }}</p>
+    <p style="text-align: center;font-size: 12px;">{{ selectedNode.description }}</p>
   
+    <div [ngSwitch]="selectedNode.category">
+
+      <div *ngSwitchCase="'Cmd Stage'" class="cmd_stage">
+        <label for="cmdInput">Command :</label>
+        <textarea 
+          id="cmdInput" 
+          placeholder="Enter your command..." 
+          [(ngModel)]="selectedNode.cmd"
+          (input)="updateNodeProperty('cmd', selectedNode.cmd)">
+        </textarea>
+      
+        <div class="checkbox-container">
+          <input 
+            type="checkbox" 
+            id="rootCheck" 
+            [(ngModel)]="selectedNode.root"
+            (change)="updateNodeProperty('root', selectedNode.root)" />
+          <label for="rootCheck">Run as root</label>
+        </div>
+      
+        <button id="executeBtn" (click)="saveChanges()">Save</button>
+      </div>
+      
+      <div *ngSwitchCase="'Sleep'" class="sleep">
+        <input 
+          type="number" 
+          id="sleepTimer" 
+          min="0" 
+          [(ngModel)]="selectedNode.Time_sleep"
+          (change)="updateNodeProperty('Time_sleep', selectedNode.Time_sleep)"
+          step="500">
+        <button (click)="saveChanges()">Save</button>
+      </div>
+      
+      <div *ngSwitchCase="'CompositeTask'" class="composite-task">
+        <p style="text-align: center;font-size: 12px;">1.To edit this task, click on the pen button. </p>
+        <p style="text-align: center;font-size: 12px;">2.To delete this task, click on the trash button.</p>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+          <!-- <button  style="background: yellow; border: none; cursor: pointer;">
+            <i class="fas fa-edit"></i>
+          </button> -->
+          <button class="edit-btn">
+            <mat-icon>edit</mat-icon>
+            
+          </button>
+          <button class="delete-btn" (click)="deleteTask()">
+            <mat-icon>delete</mat-icon>
+            
+          </button>
+        </div>
+      </div>
+      
+      <!-- Cas par défaut si aucun match -->
+      <div *ngSwitchDefault>
+        <p style="text-align: center; color: red;"> task has no configuration <br> <span style="text-align: center;font-size: 12px;">(only simple tasks have configurations)</span> </p>
+      </div>
+  
+    </div>
+  </div>
+
+</div>

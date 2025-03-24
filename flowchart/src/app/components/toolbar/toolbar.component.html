@@ -1,35 +1,18 @@
-<!-- <div class="toolbar">
-  <div class="icon-container">
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <img src="../../../assets/css/file.png" alt="Icon" class="toolbar-icon"/>
-    </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item>Load File</button>
-      <button mat-menu-item>New File</button>
-    </mat-menu>
-  </div>
-  <div class="spacer"></div>
-  <div class="buttons">
-    <button mat-button class="button-start">Start</button>
-    <button mat-button class="button-save">Save</button>
-  </div>
-</div> -->
-
-
-
 <div class="toolbar">
   <div class="icon-container" (click)="togglefile()" [class.active]="fileOpen">
-    <img src="../../../assets/css/file.png" alt="Icon" class="toolbar-icon-file"/>
+    <img src="../../../assets/css/android.png" alt="Icon" class="toolbar-icon-phone"/>
     <div *ngIf="fileOpen" class="icon-menu">
-      <button mat-button>New File</button>
-      <button mat-button>Load File</button>
+      <button mat-button (click)="openNewDeviceModal()">Add a device</button>
+      <button  mat-button (click)="openDeviceListModal()">Show devices</button>
     </div>
   </div>
 
   <div class="spacer"></div>
   <div class="buttons">
-    <button mat-button class="button-start">Start</button>
-    <button mat-button class="button-save">Task +</button>
+    <button mat-button  class="button-start" (click)="openStartModal()" >Start</button>
+    <!-- (click)="startDiagram()" -->
+    <!-- <button mat-button class="button-task">Task +</button> -->
+    <button mat-button class="button-task" (click)="openTaskModal()">Task +</button>
 
   </div>
 

@@ -26,7 +26,8 @@
 
   .button-start{
     color: white !important;
-    background-color: #064E3B;
+    background-color: #3C6E71;
+    /* background-color: #9EB7B8; */
     border-radius: 20px; /* Arrondi les coins */
     transition: background-color 0.3s ease; /* Animation fluide */
 
@@ -35,12 +36,14 @@
   }
   
   .button-start:hover {
-    background-color: #043A2B; /* Couleur plus sombre au survol */
+    background-color: #2a5254; 
+    /* Couleur plus sombre au survol */
   }
 
-  .button-save {
+  .button-task {
     color: white !important;
-    background-color: #EC2638;
+    /* background-color: #EC2638; */
+        background-color: #9EB7B8;
     border-radius: 20px; /* Arrondi les coins */
  
     transition: background-color 0.3s ease; /* Animation fluide */
@@ -48,8 +51,8 @@
     right: 4px;
   }
   
-  .button-save:hover {
-    background-color: #7F1D1D; /* Couleur plus sombre au survol */
+  .button-task:hover {
+    background-color: #6e8586; /* Couleur plus sombre au survol */
   }
   
 
@@ -59,14 +62,15 @@
     padding: 10px;
   }
   
-  .toolbar-icon-file {
+  .toolbar-icon-phone {
     margin-top:8px;
-    width: 30px;
+    margin-left: 5px;
+    width: 20px;
     height: 30px;
     transition: background-color 0.3s ease, transform 0.3s ease; /* Garder la transition pour la couleur et le transform */
   }
   
-  .icon-container:hover .toolbar-icon-file {
+  .icon-container:hover .toolbar-icon-phone {
     background-color: rgba(0, 0, 0, 0.1); /* Rectangle background on hover */
     transform: scale(1.2); /* Agrandir l'icône sans changer son espace */
     border-radius: 4px;
@@ -95,8 +99,9 @@
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    width: 90px; /* Couvre toute la largeur de l'élément parent */
-    
+    /* width: 90px; Couvre toute la largeur de l'élément parent */
+    width: 125px; /* Augmenté pour plus d'espace */
+    padding: 10px; /* Ajout d'un padding */
   }
   
   .icon-menu button {

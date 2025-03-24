@@ -1,0 +1,63 @@
+/* Style général du conteneur de connexion */
+.login-container {
+    width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  
+  /* Style du logo */
+  .login-container img {
+    display: block;
+    margin: 0 auto 30px;
+    width: 180px; /* Taille agrandie du logo */
+    height: auto;
+  }
+  
+  /* Style des groupes de formulaire */
+  .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  /* Style des labels */
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* Style des champs de saisie */
+  .form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  
+  /* Style du bouton de connexion */
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #3F51B5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3546a4;
+  }
