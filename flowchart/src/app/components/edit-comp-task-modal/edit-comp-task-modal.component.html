@@ -1,0 +1,45 @@
+<mat-dialog-content class="dialog-content">
+    <!-- Vérification des nœuds Start et End -->
+    <div *ngIf="!hasStartAndEndNode(); else checkConnections" style="text-align: center;">
+      <img 
+        src="assets/css/danger.png" 
+        alt="Warning" 
+        width="32" 
+        height="32" 
+        style="display: block; margin: 0 auto 5px;margin-top: 5px;">
+      <p style="color: red; font-weight: normal;">
+        You cannot save a process that does not contain both a Start node and an End node.
+      </p>
+    </div>
+  
+    <!-- Vérification des connexions -->
+    <ng-template #checkConnections>
+      <div *ngIf="hasUnconnectedNodes(); else formContent" style="text-align: center;">
+        <img 
+          src="assets/css/danger.png" 
+          alt="Warning" 
+          width="32" 
+          height="32" 
+          style="display: block; margin: 0 auto 5px;">
+        <p style="color: red; font-weight: normal;">
+          You cannot Save, and there are unconnected nodes.
+        </p>
+      </div>
+    </ng-template>
+  
+    <!-- Contenu principal si toutes les vérifications sont passées -->
+    <ng-template #formContent>
+      <!-- <h2 mat-dialog-title style="color: #284B63;">Save changes</h2> -->
+      <p style="text-align: center;">Are you sure you want to save the changes to this composite task?</p>
+    </ng-template>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="end">
+    <ng-container *ngIf="hasStartAndEndNode() && !hasUnconnectedNodes(); else closeOnly">
+      <button mat-button class="button-close" (click)="onCancel()">Close</button>
+      <button mat-button class="button-start" (click)="saveChanges()">Save</button>
+    </ng-container>
+    <ng-template #closeOnly>
+      <button mat-button class="button-close" (click)="onCancel()">Close</button>
+    </ng-template>
+  </mat-dialog-actions>

@@ -1,4 +1,4 @@
 <app-header></app-header>
-<app-toolbar></app-toolbar>
-<app-sidebar></app-sidebar>
+<app-toolbar [isEditing]="isEditing" (editModeChange)="setEditingMode($event)"></app-toolbar>
+<app-sidebar (editMode)="setEditingMode($event)"></app-sidebar>
 <app-gojs-diagram></app-gojs-diagram>

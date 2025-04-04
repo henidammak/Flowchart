@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { DiagramSelectionService } from 'src/Services/diagram-selection.service';
 
 @Component({
   selector: 'app-new-device-modal',
@@ -12,7 +13,8 @@ export class NewDeviceModalComponent {
   selectedFile: File | null = null;
   filePath: string | null = null;
 
-  constructor(private dialogRef: MatDialogRef<NewDeviceModalComponent>) {}
+  constructor(
+    private dialogRef: MatDialogRef<NewDeviceModalComponent>,private selectionService: DiagramSelectionService) {}
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -22,7 +24,7 @@ export class NewDeviceModalComponent {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.imagePreview = e.target?.result as string;
-        this.filePath = this.selectedFile ? this.selectedFile.name : ''; // Stocke le nom du fichier
+        this.filePath = this.selectedFile ? this.selectedFile.name : '';
       };
       reader.readAsDataURL(this.selectedFile);
     }
@@ -33,8 +35,12 @@ export class NewDeviceModalComponent {
   }
 
   onSave() {
-    this.dialogRef.close({
-      icon: this.filePath,
-    });
+    if (this.DeviceName) {
+      this.selectionService.addDevice({
+        name: this.DeviceName,
+        icon: this.imagePreview as string,
+      });
+    }
+    this.dialogRef.close();
   }
 }

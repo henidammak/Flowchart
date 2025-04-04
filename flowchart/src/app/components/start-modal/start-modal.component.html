@@ -1,33 +1,49 @@
-<h2 mat-dialog-title style="color: #284B63;">Devices List</h2>
-
 <mat-dialog-content class="dialog-content">
-  <div class="phone-item">
-    <img src="../../../assets/css/note10.png" class="phone-image" alt="iPhone 13">
-    <span class="phone-name">Samsung Galaxy Note 10</span>
-    <input type="checkbox" class="custom-checkbox">
+  <!-- Vérification des nœuds Start et End -->
+  <div *ngIf="!hasStartAndEndNode(); else checkConnections" style="text-align: center;">
+    <img 
+      src="assets/css/danger.png" 
+      alt="Warning" 
+      width="32" 
+      height="32" 
+      style="display: block; margin: 0 auto 5px;margin-top: 5px;">
+    <p style="color: red; font-weight: normal;">
+      You cannot start a process that does not contain both a Start node and an End node.
+    </p>
   </div>
 
-  <div class="phone-item">
-    <img src="../../../assets/css/note20.png" class="phone-image" alt="Samsung Galaxy S22">
-    <span class="phone-name">Samsung Galaxy Note 20</span>
-    <input type="checkbox" class="custom-checkbox">
-  </div>
+  <!-- Vérification des connexions -->
+  <ng-template #checkConnections>
+    <div *ngIf="hasUnconnectedNodes(); else formContent" style="text-align: center;">
+      <img 
+        src="assets/css/danger.png" 
+        alt="Warning" 
+        width="32" 
+        height="32" 
+        style="display: block; margin: 0 auto 5px;">
+      <p style="color: red; font-weight: normal;">
+        You cannot Start, and there are unconnected nodes.
+      </p>
+    </div>
+  </ng-template>
 
-  <div class="phone-item">
-    <img src="../../../assets/css/s24ultra2.png" class="phone-image" alt="Google Pixel 7">
-    <span class="phone-name">Samsung Galaxy S 25 ultra</span>
-    <input type="checkbox" class="custom-checkbox">
-  </div>
-
-  <div class="phone-item">
-    <img src="../../../assets/css/s24ultra.png" class="phone-image" alt="Google Pixel 7">
-    <span class="phone-name">Samsung Galaxy S 24 ultra</span>
-    <input type="checkbox" class="custom-checkbox">
-  </div>
+  <!-- Contenu principal si toutes les vérifications sont passées -->
+  <ng-template #formContent>
+    <h2 mat-dialog-title style="color: #284B63;">Start On :</h2>
+    <div *ngFor="let device of devices" class="phone-item">
+      <img [src]="device.icon" class="phone-image" alt="{{ device.name }}">
+      <span class="phone-name">{{ device.name }}</span>
+      <input type="checkbox" class="custom-checkbox">
+    </div>
+  </ng-template>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button class="button-close" (click)="onCancel()">Close</button>
-  <button mat-button class="button-start" (click)="startDiagram()">Start</button>
-  <!-- (click)="startDiagram()" -->
+  <ng-container *ngIf="hasStartAndEndNode() && !hasUnconnectedNodes(); else closeOnly">
+    <button mat-button class="button-close" (click)="onCancel()">Close</button>
+    <button mat-button class="button-start" (click)="startDiagram()">Start</button>
+  </ng-container>
+  <ng-template #closeOnly>
+    <button mat-button class="button-close" (click)="onCancel()">Close</button>
+  </ng-template>
 </mat-dialog-actions>

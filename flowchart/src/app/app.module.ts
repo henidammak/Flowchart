@@ -1,3 +1,4 @@
+
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
@@ -24,6 +25,8 @@ import { HomeComponent } from './components/home/home.component';
 import { DeviceListModalComponent } from './components/device-list-modal/device-list-modal.component';
 import { NewDeviceModalComponent } from './components/new-device-modal/new-device-modal.component';
 import { StartModalComponent } from './components/start-modal/start-modal.component';
+import {  EditCompTaskModalComponent } from './components/edit-comp-task-modal/edit-comp-task-modal.component';
+
 
 
 
@@ -40,6 +43,7 @@ import { StartModalComponent } from './components/start-modal/start-modal.compon
     DeviceListModalComponent,
     NewDeviceModalComponent,
     StartModalComponent,
+    EditCompTaskModalComponent,
 
 
   ],

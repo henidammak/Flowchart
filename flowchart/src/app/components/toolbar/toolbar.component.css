@@ -1,125 +1,138 @@
-/* toolbar.component.css */
+
 .toolbar {
-    position: fixed; /* Fixe la navbar en haut */
-    display: flex;
-    height: 60px;
-    background-color: white;
-    align-items: center;
-    z-index: 4;
-    top: 54px;
-    left: 0;
-    width: 100%;
-    /* box-shadow: -2px 0 7px rgba(0, 0, 0, 0.2); */
-    box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.5);
+  position: fixed;
+  display: flex;
+  height: 60px;
+  background-color: white;
+  align-items: center;
+  z-index: 4;
+  top: 54px;
+  left: 0;
+  width: 100%;
+  box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.5);
 }
 
-
 .spacer {
-    flex: 1;
+  flex: 1;
 }
 
 .buttons {
-    display: flex;
-    gap: 16px; /* Espace entre les boutons */
+  display: flex;
+  gap: 16px;
+
 }
 
 
-  .button-start{
-    color: white !important;
-    background-color: #3C6E71;
-    /* background-color: #9EB7B8; */
-    border-radius: 20px; /* Arrondi les coins */
-    transition: background-color 0.3s ease; /* Animation fluide */
+.button-start {
+  color: white !important;
+  background-color: #3C6E71;
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+  margin-top: 5px;
+
+}
+
+.button-start:hover {
+  background-color: #2a5254;
+}
+
+.button-task {
+  color: white !important;
+  background-color: #6e8586;
+  margin-top: 5px;
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+  right: 4px;
+}
+
+.button-task:hover {
+  background-color: #9EB7B8;
+
+}
 
 
-    
-  }
-  
-  .button-start:hover {
-    background-color: #2a5254; 
-    /* Couleur plus sombre au survol */
-  }
+.icon-container {
+  position: relative;
+  display: inline-block;
+  padding: 10px;
+}
 
-  .button-task {
-    color: white !important;
-    /* background-color: #EC2638; */
-        background-color: #9EB7B8;
-    border-radius: 20px; /* Arrondi les coins */
- 
-    transition: background-color 0.3s ease; /* Animation fluide */
+.toolbar-icon-phone {
+  margin-top: 8px;
+  margin-left: 5px;
+  width: 20px;
+  height: 30px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
 
-    right: 4px;
-  }
-  
-  .button-task:hover {
-    background-color: #6e8586; /* Couleur plus sombre au survol */
-  }
-  
+.icon-container:hover .toolbar-icon-phone {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: scale(1.2);
+  border-radius: 4px;
+}
 
-  .icon-container {
-    position: relative;
-    display: inline-block;
-    padding: 10px;
-  }
-  
-  .toolbar-icon-phone {
-    margin-top:8px;
-    margin-left: 5px;
-    width: 20px;
-    height: 30px;
-    transition: background-color 0.3s ease, transform 0.3s ease; /* Garder la transition pour la couleur et le transform */
-  }
-  
-  .icon-container:hover .toolbar-icon-phone {
-    background-color: rgba(0, 0, 0, 0.1); /* Rectangle background on hover */
-    transform: scale(1.2); /* Agrandir l'icône sans changer son espace */
-    border-radius: 4px;
-  }
+.toolbar-icon-share {
+  margin-top: 8px;
+  width: 30px;
+  height: 30px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
 
-  .toolbar-icon-share {
-    margin-top:8px;
-    width: 30px;
-    height: 30px;
-    transition: background-color 0.3s ease, transform 0.3s ease; /* Garder la transition pour la couleur et le transform */
-  }
-  
-  .icon-container:hover .toolbar-icon-share {
-    background-color: rgba(0, 0, 0, 0.1); /* Rectangle background on hover */
-    transform: scale(1.2); /* Agrandir l'icône sans changer son espace */
-    border-radius: 4px;
-  }
-  
-  .icon-menu {
-    position: absolute;
-    top: 50px; /* Ajustez cette valeur si nécessaire */
-    left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    /* width: 90px; Couvre toute la largeur de l'élément parent */
-    width: 125px; /* Augmenté pour plus d'espace */
-    padding: 10px; /* Ajout d'un padding */
-  }
-  
-  .icon-menu button {
-    padding: 10px;
-    text-align: left;
-    color: gray; /* Texte gris */
-    background-color: transparent; /* Assurer que le fond reste transparent */
-    border: none; /* Pour éviter les bordures par défaut du bouton */
-    cursor: pointer;
-  }
-  
-  .icon-menu button:hover {
-    background-color: rgba(0, 0, 0, 0.05); /* Légère couleur de fond au survol des boutons */
-    width: 100%;
-  }
-  
-  .icon-container.active .icon-menu {
-    display: block;
-    
-  }
-  
+.icon-container:hover .toolbar-icon-share {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: scale(1.2);
+  border-radius: 4px;
+}
+
+.icon-menu {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  width: 125px;
+  padding: 10px;
+}
+
+.icon-menu button {
+  padding: 10px;
+  text-align: left;
+  color: gray;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.icon-menu button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+.icon-container.active .icon-menu {
+  display: block;
+
+}
+
+
+.check-btn {
+  margin-top: 5px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background-color: #3C6E71;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.check-btn:hover {
+  background-color: #2a5254;
+}

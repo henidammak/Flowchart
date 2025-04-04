@@ -18,6 +18,7 @@ export class GojsDiagramComponent implements AfterViewInit {
   private myDiagram: go.Diagram | null = null;
   private myPalette: go.Palette | null = null;
   private saveSubscription!: Subscription;
+  private editSubscription!: Subscription;
   private startSubscription!: Subscription;
   task: any = {}; // Stocke le dictionnaire recu par le moadal ici
   ////////
@@ -742,7 +743,7 @@ export class GojsDiagramComponent implements AfterViewInit {
     // activer cette ligne pour vider le locale storage//
     // localStorage.clear();
 
-    //////cette function affiche le stockage du locale storage dans la console/////
+    ////// affiche le stockage du locale storage dans la console/////
     function getLocalStorageSize(): number {
       let total = 0;
       for (let key in localStorage) {
@@ -758,7 +759,21 @@ export class GojsDiagramComponent implements AfterViewInit {
       getLocalStorageSize(),
       'Ko'
     );
+
+    function getLocalStorageRemainingSize(): number {
+      const maxSizeKB = 5120; // Estimation de 5 Mo en Ko
+      const usedSizeKB = getLocalStorageSize(); // Taille utilisée avec ta méthode existante
+      return maxSizeKB - usedSizeKB; // Stockage restant en Ko
+    }
+    
+    console.log(
+      'Espace disponible dans LocalStorage:',
+      getLocalStorageRemainingSize(),
+      'Ko'
+    );
     //////fin/////
+
+    
 
     // le contenu affiché dans la palette
     const savedTasks = JSON.parse(
@@ -812,6 +827,9 @@ export class GojsDiagramComponent implements AfterViewInit {
         this.start();
       }
     );
+    this.editSubscription = this.selectionService.editAction$.subscribe(() => {
+      this.edit();
+    });
 
     /////les données envoyé par le modal//
 
@@ -867,31 +885,6 @@ export class GojsDiagramComponent implements AfterViewInit {
 
     //////supprimer composite task dans la palette //////
 
-  // removeTaskFromPalette(taskTitle: string) {
-  //   if (!this.myPalette) return;
-  
-  //   // Récupérer le modèle actuel
-  //   const model = this.myPalette.model as go.GraphLinksModel;
-  
-  //   // Trouver l’élément à supprimer
-  //   const nodeToRemove = model.nodeDataArray.find((node: any) => node.text === taskTitle);
-  
-  //   if (nodeToRemove) {
-  //     // Supprimer du modèle GoJS
-  //     model.removeNodeData(nodeToRemove);
-  
-  //     console.log('Tâche supprimée de la palette :', nodeToRemove);
-  
-  //     // Récupérer les tâches enregistrées dans le localStorage
-  //     let savedTasks = JSON.parse(localStorage.getItem('compositeTasks') || '[]');
-  
-  //     // Filtrer pour supprimer la tâche correspondante
-  //     savedTasks = savedTasks.filter((task: any) => task.text !== taskTitle);
-  
-  //     // Sauvegarder la liste mise à jour
-  //     localStorage.setItem('compositeTasks', JSON.stringify(savedTasks));
-  //   }
-  // }
 
   removeTaskFromPalette(taskTitle: string) {
     if (!this.myPalette) return;
@@ -917,6 +910,9 @@ export class GojsDiagramComponent implements AfterViewInit {
     }
     if (this.startSubscription) {
       this.startSubscription.unsubscribe();
+    }
+    if (this.editSubscription) {
+      this.editSubscription.unsubscribe();
     }
   }
 
@@ -1039,118 +1035,41 @@ export class GojsDiagramComponent implements AfterViewInit {
       const parsedData = JSON.parse(jsonData);
       console.log(parsedData);
 
-      this.selectionService.setPipeline(jsonData);
+      this.selectionService.setPipelineForStartAndAddTask(jsonData);
     }
   }
+  edit(): void {
+    if (!this.myDiagram) return;
+  
+    const savedModel = document.getElementById('mySavedModel') as HTMLTextAreaElement;
+    if (savedModel) {
+      // Étape 1 : Sauvegarder le JSON du composant
+      savedModel.value = this.myDiagram.model.toJson();
+      this.myDiagram.isModified = false;
+      const jsonData = savedModel.value;
+      const parsedData = JSON.parse(jsonData);
+      console.log('JSON Complet:', parsedData);
 
-  // start(): void {
-  //   if (!this.myDiagram) return;
+      this.selectionService.setPipelineForEditCompositeTask(jsonData);
+      
+      // Étape 2 : Récupérer uniquement la partie pipeline
+      const compositeTask = parsedData.nodeDataArray.find(
+        (node: any) => node.category === 'CompositeTask' && node.pipeline
+      );
   
-  //   const savedModel = document.getElementById(
-  //     'mySavedModel'
-  //   ) as HTMLTextAreaElement;
-  //   if (!savedModel) return;
+      if (compositeTask && compositeTask.pipeline) {
+        const pipelineData = compositeTask.pipeline;
+        console.log('Pipeline Extracted:', pipelineData);
+        
+        // Étape 3 : Charger uniquement le pipeline dans le diagramme
+        this.myDiagram.model = go.Model.fromJson(pipelineData);
+      } else {
+        console.warn('Aucun pipeline trouvé dans le JSON');
+      }
+    }
+  }
   
-  //   const jsonData = savedModel.value;
-  //   const parsedData = JSON.parse(jsonData);
-  
-  //   const nodeArray = parsedData.nodeDataArray;
-  //   const linkArray = parsedData.linkDataArray;
-  
-  //   let cmdStages: CmdStage[] = [];
-  //   let sleepTasks: Sleep_Task[] = [];
-  //   let startTasks: Start_Task[] = [];
-  //   let endTasks: End_Task[] = [];
-  //   let compositeTasks: Composite_Task[] = [];
-  //   let links: { from: string; to: string }[] = [];
-  
-  //   function parseCompositeTask(node: any): Composite_Task {
-  //     let subCmdStages: CmdStage[] = [];
-  //     let subSleepTasks: Sleep_Task[] = [];
-  //     let subStartTasks: Start_Task[] = [];
-  //     let subEndTasks: End_Task[] = [];
-  //     let subCompositeTasks: Composite_Task[] = [];
-  //     let subLinks: { from: string; to: string }[] = [];
-  
-  //     if (node.pipeline) {
-  //       node.pipeline.nodeDataArray.forEach((subNode: any) => {
-  //         switch (subNode.category) {
-  //           case 'Cmd Stage':
-  //             subCmdStages.push(new CmdStage(subNode.key.toString(), subNode.text, subNode.cmd || "", subNode.root ? 1 : 0));
-  //             break;
-  //           case 'Sleep':
-  //             subSleepTasks.push(new Sleep_Task(subNode.key.toString(), subNode.text, subNode.Time_sleep));
-  //             break;
-  //           case 'Start':
-  //             subStartTasks.push(new Start_Task(subNode.key.toString(), subNode.text));
-  //             break;
-  //           case 'End':
-  //             subEndTasks.push(new End_Task(subNode.key.toString(), subNode.text));
-  //             break;
-  //           case 'CompositeTask':
-  //             subCompositeTasks.push(parseCompositeTask(subNode));
-  //             break;
-  //         }
-  //       });
-  
-  //       subLinks = node.pipeline.linkDataArray.map((subLink: any) => ({
-  //         from: subLink.from.toString(),
-  //         to: subLink.to.toString(),
-  //       }));
-  //     }
-  
-  //     return new Composite_Task(
-  //       node.key.toString(),
-  //       node.text,
-  //       subCmdStages.length ? subCmdStages : [],
-  //       subSleepTasks.length ? subSleepTasks : [],
-  //       subStartTasks.length ? subStartTasks : [],
-  //       subEndTasks.length ? subEndTasks : [],
-  //       subCompositeTasks.length ? subCompositeTasks : [],
-  //       subLinks.length ? subLinks : []
-  //     );
-  //   }
-  
-  //   nodeArray.forEach((node: any) => {
-  //     switch (node.category) {
-  //       case 'Cmd Stage':
-  //         cmdStages.push(new CmdStage(node.key.toString(), node.text, node.cmd || "", node.root ? 1 : 0));
-  //         break;
-  //       case 'Sleep':
-  //         sleepTasks.push(new Sleep_Task(node.key.toString(), node.text, node.Time_sleep));
-  //         break;
-  //       case 'Start':
-  //         startTasks.push(new Start_Task(node.key.toString(), node.text));
-  //         break;
-  //       case 'End':
-  //         endTasks.push(new End_Task(node.key.toString(), node.text));
-  //         break;
-  //       case 'CompositeTask':
-  //         compositeTasks.push(parseCompositeTask(node));
-  //         break;
-  //     }
-  //   });
-  
-  //   links = linkArray.map((link: any) => ({
-  //     from: link.from.toString(),
-  //     to: link.to.toString(),
-  //   }));
-  
-  //   let formattedJson: any = {};
-  //   if (cmdStages.length) formattedJson['Cmd Stage'] = cmdStages;
-  //   if (sleepTasks.length) formattedJson['Sleep'] = sleepTasks;
-  //   if (startTasks.length) formattedJson['Start'] = startTasks;
-  //   if (endTasks.length) formattedJson['End'] = endTasks;
-  //   if (compositeTasks.length) formattedJson['CompositeTask'] = compositeTasks;
-  //   if (links.length) formattedJson['Links'] = links;
-  
-  //   const outputTextArea = document.getElementById(
-  //     'outputJson'
-  //   ) as HTMLTextAreaElement;
-  //   if (outputTextArea) {
-  //     outputTextArea.value = JSON.stringify(formattedJson, null, 2);
-  //   }
-  // }
+
   start(): void {
     if (!this.myDiagram) return;
   
